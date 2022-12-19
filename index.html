@@ -7,7 +7,14 @@
     <title>Vite + TS</title>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
+    <header class="header">
+      <div class="header__controls controls">
+        <button type="button" class="controls__btn" id="move_tool">Move</button>
+        <button type="button" class="controls__btn" id="pen_tool">Pen</button>
+        <button type="button" class="controls__btn" id="line_tool">Line</button>
+      </div>
+    </header>
+    <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

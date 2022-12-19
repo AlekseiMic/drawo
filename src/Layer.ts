@@ -6,28 +6,35 @@ export class Layer {
 
   private _drawer: Drawer | null = null;
 
+  private _id: string;
+
+  constructor(id: string) {
+    this._id = id;
+  }
+
   get scratches() {
     return Object.values(this._scratches);
   }
 
   getId(): string {
-    return "id0";
+    return this._id;
   }
 
   set drawer(drawer: Drawer) {
-    if (this._drawer) this._drawer.removeLayer(this);
     this._drawer = drawer;
-    this._drawer.addLayer(this);
   }
 
-  draw(): void {
-    if (!this._drawer) throw new Error("Drawer not found");
-    this._drawer.redraw();
+  preview(scratch?: IScratch) {
+    this._drawer?.preview(scratch);
+  }
+
+  draw(scratch?: IScratch): void {
+    this._drawer?.redraw(this, scratch);
   }
 
   add(scratch: IScratch) {
     this._scratches[scratch.getId()] = scratch;
-    this.draw();
+    this.draw(scratch);
   }
 
   remove(scratch: IScratch) {
@@ -37,6 +44,6 @@ export class Layer {
 
   change(scratch: IScratch, id?: string) {
     this._scratches[id ?? scratch.getId()] = scratch;
-    this.draw();
+    this.draw(scratch);
   }
 }

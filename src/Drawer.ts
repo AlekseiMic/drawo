@@ -1,6 +1,8 @@
-import { Canvas } from "./Canvas";
+import { IScratch } from "./interfaces/IScratch";
 import { Point } from "./interfaces/Point";
 import { Layer } from "./Layer";
+import { nanoid } from "nanoid";
+import { Canvas } from "./Canvas";
 
 export type StylesConfig = {
   color?: string;
@@ -8,58 +10,125 @@ export type StylesConfig = {
 };
 
 export class Drawer {
-  private _layers: Record<string, Layer> = {};
+  private _layers: Record<string, { layer: Layer; canvas: Canvas }> = {};
 
-  private _config: StylesConfig = {
-    color: "white",
-    lineWidth: 2,
-  };
+  private _activeLayer: string | undefined;
 
-  constructor(private readonly canvas: Canvas) {
-    this.applyStyles(this._config);
+  public width: number = 0;
+
+  public height: number = 0;
+
+  get active() {
+    if (!this._activeLayer) return null;
+    return this._layers[this._activeLayer].layer;
   }
 
-  set config(config: StylesConfig) {
-    this._config = config;
-    this.applyStyles(config);
+  constructor(private _container: HTMLDivElement) {
+    this.addResizeListener();
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.createLayer("preview");
   }
 
-  get config() {
-    return this._config;
+  createLayer(id?: string) {
+    const layer = new Layer(id ?? nanoid());
+    layer.drawer = this;
+    this.addLayer(layer);
+    this._activeLayer = layer.getId();
+    return layer;
   }
 
-  clear() {
-    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  private addResizeListener() {
+    window.addEventListener("resize", () => {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      Object.values(this._layers).forEach(({ canvas }) => {
+        canvas.width = this.width;
+        canvas.height = this.height;
+      });
+    });
   }
 
-  redraw() {
-    this.clear();
-    for (const layer in this._layers) {
-      this._layers[layer].scratches.forEach((s) => s.draw(this));
+  clear(layer: Layer) {
+    const canvas = this._layers[layer.getId()].canvas;
+    canvas.ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  // Check geometry and redraw only touched scratches on layer
+  redraw(layer: Layer, scratch?: IScratch) {
+    if (scratch && layer) {
+      scratch.draw(layer, this);
+    } else {
+      for (const layer in this._layers) {
+        const layerObj = this._layers[layer].layer;
+        layerObj.scratches.forEach((s) => s.draw(layerObj, this));
+      }
     }
   }
 
-  drawPoint(p: Point, config: StylesConfig) {
-    const ctx = this.canvas.ctx;
-    const prevConfig = this.config;
-
-    if (config) this.config = config;
-
-    ctx.fillRect(
-      p.x,
-      p.y,
-      this.config.lineWidth ?? 1,
-      this.config.lineWidth ?? 1
-    );
-
-    if (config) this.config = prevConfig;
+  preview(scratch?: IScratch) {
+    const layer = this._layers["preview"].layer;
+    this.clear(layer);
+    if (scratch) this.redraw(layer, scratch);
   }
 
-  drawLine(start: Point, end: Point, config?: StylesConfig) {
-    const ctx = this.canvas.ctx;
-    const prevConfig = this.config;
+  drawCurve(layer: Layer, points: Point[], config: StylesConfig) {
+    const { canvas } = this._layers[layer.getId()];
+    const ctx = canvas.ctx;
+    if (points.length <= 1) return;
+    if (points.length === 2) {
+      return this.drawLine(layer, points[0], points[1], config);
+    }
 
-    if (config) this.config = config;
+    if (config) {
+      canvas.ctx.save();
+      canvas.applyToolStyles(config);
+    }
+
+    let i = 0;
+
+    ctx.beginPath();
+    ctx.moveTo(points[i].x, points[i].y);
+
+    for (i = 1; i < points.length - 2; i++) {
+      const deltaX = (points[i].x + points[i + 1].x) / 2;
+      const deltaY = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, deltaX, deltaY);
+    }
+
+    ctx.quadraticCurveTo(
+      points[i].x,
+      points[i].y,
+      points[i + 1].x,
+      points[i + 1].y
+    );
+    ctx.stroke();
+
+    if (config) canvas.ctx.restore();
+  }
+
+  drawPoint(layer: Layer, p: Point, config: StylesConfig) {
+    const canvas = this._layers[layer.getId()].canvas;
+    const ctx = canvas.ctx;
+
+    if (config) {
+      canvas.ctx.save();
+      canvas.applyToolStyles(config);
+    }
+
+    ctx.fillRect(p.x, p.y, ctx.lineWidth ?? 1, ctx.lineWidth ?? 1);
+
+    if (config) canvas.ctx.restore();
+  }
+
+  drawLine(layer: Layer, start: Point, end: Point, config?: StylesConfig) {
+    const canvas = this._layers[layer.getId()].canvas;
+    const ctx = canvas.ctx;
+
+    if (config) {
+      canvas.ctx.save();
+      canvas.applyToolStyles(config);
+    }
 
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -67,18 +136,19 @@ export class Drawer {
     ctx.closePath();
     ctx.stroke();
 
-    if (config) this.config = prevConfig;
-  }
-
-  private applyStyles(config: StylesConfig) {
-    const ctx = this.canvas.ctx;
-    ctx.lineWidth = config.lineWidth ?? 10;
-    ctx.strokeStyle = config.color ?? "white";
-    ctx.fillStyle = config.color ?? "white";
+    if (config) canvas.ctx.restore();
   }
 
   addLayer(layer: Layer) {
-    this._layers[layer.getId()] = layer;
+    const el = document.createElement("canvas");
+    el.id = layer.getId();
+    this._container.appendChild(el);
+    const canvas = new Canvas(el);
+
+    canvas.width = this.width;
+    canvas.height = this.height;
+
+    this._layers[layer.getId()] = { layer, canvas };
   }
 
   removeLayer(layer: Layer) {

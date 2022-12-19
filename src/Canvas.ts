@@ -1,67 +1,44 @@
-export class Canvas {
-  private rect = {
-    width: 0,
-    height: 0,
-  };
+import { StylesConfig } from "./Drawer";
 
-  private context: CanvasRenderingContext2D;
+export class Canvas {
+  private _context: CanvasRenderingContext2D;
 
   get ctx() {
-    return this.context;
+    return this._context;
   }
 
   set width(width: number) {
-    this.canvas.width = width;
-    this.rect.width = width;
+    this._element.width = width;
   }
 
   set height(height: number) {
-    this.canvas.height = height;
-    this.rect.height = height;
+    this._element.height = height;
   }
 
-  get width() {
-    return this.rect.width;
-  }
-
-  get height() {
-    return this.rect.height;
-  }
-
-  constructor(private readonly canvas: HTMLCanvasElement) {
-    const context = canvas.getContext("2d");
+  constructor(private _element: HTMLCanvasElement) {
+    const context = this._element.getContext("2d");
     if (!context) {
       throw new Error('Canvas not created: "cannot access context!"');
     }
-    this.context = context;
+    this._context = context;
+    this.init();
   }
 
   init() {
     this.applyStyles();
-    this.applyListeners();
-    this.resize();
   }
 
   private applyStyles() {
-    this.canvas.style.position = "absolute";
-    this.canvas.style.top = "0px";
-    this.canvas.style.left = "0px";
-    this.canvas.style.backgroundColor = "#000000";
+    this._element.style.position = "absolute";
+    this._element.style.top = "0px";
+    this._element.style.left = "0px";
+    this._element.style.backgroundColor = "transparent";
   }
 
-  private resize() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-  }
-
-  private addResizeListener() {
-    window.addEventListener("resize", (e) => {
-      console.log(e);
-      this.resize();
-    });
-  }
-
-  private applyListeners() {
-    this.addResizeListener();
+  public applyToolStyles(config: StylesConfig) {
+    const ctx = this.ctx;
+    ctx.lineWidth = config.lineWidth ?? 10;
+    ctx.strokeStyle = config.color ?? "white";
+    ctx.fillStyle = config.color ?? "white";
   }
 }

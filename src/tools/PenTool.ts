@@ -1,16 +1,17 @@
-import { StylesConfig } from "../Drawer";
+import { Drawer, StylesConfig } from "../Drawer";
 import { ITool } from "../interfaces/ITool";
-import { Layer } from "../Layer";
 import { PenScratch } from "../scratches/PenScratch";
 
 export class PenTool implements ITool {
   private active: boolean = false;
 
+  private activated: boolean = false;
+
   private scratch: PenScratch | undefined;
 
   private _config?: StylesConfig;
 
-  constructor(private readonly layer: Layer) {
+  constructor(private drawer: Drawer) {
     this.mouseupListener = this.mouseupListener.bind(this);
     this.mousedownListener = this.mousedownListener.bind(this);
     this.mousemoveListener = this.mousemoveListener.bind(this);
@@ -28,7 +29,6 @@ export class PenTool implements ITool {
     });
     this.scratch.config = { color: "green", lineWidth: 0.25 };
     this.active = true;
-    this.layer.add(this.scratch);
   }
 
   private mouseupListener(e: MouseEvent) {
@@ -39,7 +39,8 @@ export class PenTool implements ITool {
         y: e.y,
       });
       if (this._config) this.scratch.config = this._config;
-      this.layer.change(this.scratch);
+      this.drawer?.active?.add(this.scratch);
+      this.drawer?.active?.preview();
     }
   }
 
@@ -49,24 +50,30 @@ export class PenTool implements ITool {
       x: e.x,
       y: e.y,
     });
-    this.layer.change(this.scratch);
+    this.drawer?.active?.preview(this.scratch);
   }
 
   activate(): void {
-    this.applyListeners();
+    if (!this.activated) {
+      this.activated = true;
+      this.applyListeners();
+    }
   }
 
   disable(): void {
-    this.disableListeners();
+    if (this.activated) {
+      this.disableListeners();
+      this.activated = false;
+    }
   }
 
-  disableListeners() {
+  private disableListeners() {
     window.removeEventListener("mousedown", this.mousedownListener);
     window.removeEventListener("mouseup", this.mouseupListener);
     window.removeEventListener("mousemove", this.mousemoveListener);
   }
 
-  applyListeners() {
+  private applyListeners() {
     window.addEventListener("mousedown", this.mousedownListener);
     window.addEventListener("mouseup", this.mouseupListener);
     window.addEventListener("mousemove", this.mousemoveListener);

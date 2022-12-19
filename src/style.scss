@@ -25,3 +25,33 @@ html {
 h1 {
   font-size: 2.6rem;
 }
+
+#app {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 55px;
+  background: #333;
+  box-sizing: border-box;
+  border-bottom: 1px solid #555;
+
+  .controls {
+    margin-left: 5px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    &__btn {
+      width: 45px;
+      height: 45px;
+    }
+  }
+}
