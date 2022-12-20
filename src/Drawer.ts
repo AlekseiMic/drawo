@@ -72,37 +72,25 @@ export class Drawer {
     if (scratch) this.redraw(layer, scratch);
   }
 
-  putImageData(layer: Layer, data: ImageData, x: number, y: number) {
+  putImageData(layer: Layer, data: Map<number, Point>, x: number, y: number) {
     const { canvas } = this._layers[layer.getId()];
     const ctx = canvas.ctx;
     const imageData = ctx.getImageData(0, 0, this.width, this.height);
     // const imageData = new ImageData(this.width, this.height);
 
-    let isEnd = false;
-    let cx = 0;
-    let cy = 0;
-    let index = 0;
-    while (!isEnd) {
-      index = cy * data.width * 4 + cx * 4;
-      const idIdx = (x + cx) * 4 + (cy + y) * imageData.width * 4;
-
-      cx++;
-      if (cx >= data.width && cy >= data.height) isEnd = true;
-      if (cx >= data.width) {
-        cx = 0;
-        cy++;
-      }
-
-      if (!data.data[index]) {
-        continue;
-      }
-
-      imageData.data[idIdx] = data.data[index];
-      imageData.data[idIdx + 1] = data.data[index + 1];
-      imageData.data[idIdx + 2] = data.data[index + 2];
-      imageData.data[idIdx + 3] = data.data[index + 3];
+    const lineWidth = imageData.width * 4;
+    for (const [, point] of data) {
+      const idx = (x + point.x) * 4 + (point.y + y) * lineWidth;
+      this.setPixelData(imageData.data, idx);
     }
-    // ctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  private setPixelData(data: Uint8ClampedArray, idx: number, size = 1) {
+    data[idx] = 255;
+    data[idx + 1] = 255;
+    data[idx + 2] = 255;
+    data[idx + 3] = 255;
   }
 
   drawCurve(layer: Layer, points: Point[], config: StylesConfig) {

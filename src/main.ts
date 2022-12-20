@@ -20,22 +20,29 @@ function initToolbar(drawer: Drawer) {
   const moveTool = new MoveTool(drawer);
   const penTool = new PenTool(drawer);
 
-  lineBtn?.addEventListener("click", () => {
+  lineBtn?.addEventListener("mousedown", (e) => {
     penTool.disable();
     moveTool.disable();
     lineTool.activate();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
   });
 
-  penBtn?.addEventListener("click", () => {
+  penBtn?.addEventListener("mousedown", (e) => {
     lineTool.disable();
     moveTool.disable();
     penTool.activate();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
   });
 
-  moveBtn?.addEventListener("click", () => {
+  moveBtn?.addEventListener("mousedown", (e) => {
     lineTool.disable();
     moveTool.activate();
     penTool.disable();
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
   });
 }
 

@@ -8,11 +8,14 @@ export class LineScratch implements IScratch {
 
   _end: Point = { x: 0, y: 0 };
 
-  points: Point[] = [];
+  points: Map<number, Point> = new Map();
 
-  data: ImageData | undefined;
-
-  offset: Point = { x: 0, y: 0 };
+  rect: { left: number; right: number; top: number; bottom: number } = {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  };
 
   width: number = 0;
 
@@ -36,12 +39,14 @@ export class LineScratch implements IScratch {
     top: number;
     bottom: number;
   } {
-    return {
-      left: this.offset.x,
-      top: this.offset.y,
-      right: this.offset.x + this.width,
-      bottom: this.offset.y + this.height,
-    };
+    return this.rect;
+  }
+
+  isIntersects(point: Point) {
+    const index =
+      (point.y - this.rect.top) * this.width * 4 +
+      (point.x - this.rect.left) * 4;
+    return this.points.has(index);
   }
 
   process() {
@@ -54,7 +59,7 @@ export class LineScratch implements IScratch {
 
     this.width = width;
     this.height = height;
-    this.offset = { x: left, y: top };
+    this.rect = { left, top, right, bottom };
 
     const x1 = this._start.x;
     const x2 = this._end.x;
@@ -73,22 +78,15 @@ export class LineScratch implements IScratch {
     let e2;
     let er = dx + dy;
 
-    this.points = [];
+    this.points = new Map();
 
     if (width <= 0 || height <= 0) return;
-    // this.data = new Uint8ClampedArray(width * height * 4);
-    this.data = new ImageData(width, height);
-    // this.data.data.fill(0);
 
     // const start = performance.now();
     while (true) {
       if (x === x2 && y === y2) break;
-      // this.points.push({ x, y });
       const index = (y - top) * width * 4 + (x - left) * 4;
-      this.data.data[index] = 255;
-      this.data.data[index + 1] = 255;
-      this.data.data[index + 2] = 255;
-      this.data.data[index + 3] = 200;
+      this.points.set(index, { x: x - left, y: y - top });
       e2 = 2 * er;
       if (e2 > dy) {
         er += dy;
@@ -103,14 +101,9 @@ export class LineScratch implements IScratch {
   }
 
   draw(layer: Layer, drawer: Drawer) {
-    const start = performance.now();
-    // drawer.drawLine(layer, this._start, this._end, this.config);
-    // this.points.forEach((p) => {
-    //   drawer.drawPoint(layer, p);
-    // });
-    if (!this.data) return;
-    drawer.putImageData(layer, this.data, this.offset.x, this.offset.y);
-    console.log(`It took ${performance.now() - start}ms`);
+    // const start = performance.now();
+    drawer.putImageData(layer, this.points, this.rect.left, this.rect.top);
+    // console.log(`It took ${performance.now() - start}ms`);
   }
 
   getId(): string {

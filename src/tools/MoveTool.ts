@@ -14,8 +14,11 @@ export class MoveTool implements ITool {
     this.drawer.active?.scratches.forEach((s) => {
       const rect = s.getBoundingRect();
       if (!rect) return;
-      if (rect.left >= event.x && rect.right <= event.x) {
-        console.log({ rect, x: event.x, y: event.y });
+      if (rect.left >= event.x || rect.right <= event.x) return;
+      if (rect.top >= event.y || rect.bottom <= event.y) return;
+
+      if (s.isIntersects({ x: event.x, y: event.y })) {
+        console.log("selected");
       }
     });
   }

@@ -1,5 +1,6 @@
 import { Drawer } from "../Drawer";
 import { Layer } from "../Layer";
+import { Point } from "./Point";
 
 export interface IScratch {
   draw(layer: Layer, drawer: Drawer): void;
@@ -12,4 +13,6 @@ export interface IScratch {
     top: number;
     bottom: number;
   };
+
+  isIntersects(point: Point): boolean;
 }
