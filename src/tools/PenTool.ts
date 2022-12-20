@@ -27,7 +27,7 @@ export class PenTool implements ITool {
       x: e.x,
       y: e.y,
     });
-    this.scratch.config = { color: "green", lineWidth: 0.25 };
+    this.scratch.config = { color: "green", lineWidth: 5 };
     this.active = true;
   }
 

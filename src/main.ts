@@ -1,6 +1,7 @@
 import { Drawer } from "./Drawer";
 import "./style.scss";
-import { Line as LineTool } from "./tools/Line";
+import { LineTool } from "./tools/LineTool";
+import { MoveTool } from "./tools/MoveTool";
 import { PenTool } from "./tools/PenTool";
 
 function init() {
@@ -14,19 +15,27 @@ function init() {
 function initToolbar(drawer: Drawer) {
   const lineBtn = document.querySelector<HTMLButtonElement>("#line_tool");
   const penBtn = document.querySelector<HTMLButtonElement>("#pen_tool");
+  const moveBtn = document.querySelector<HTMLButtonElement>("#move_tool");
   const lineTool = new LineTool(drawer);
+  const moveTool = new MoveTool(drawer);
   const penTool = new PenTool(drawer);
 
   lineBtn?.addEventListener("click", () => {
-    console.log("asa1");
     penTool.disable();
+    moveTool.disable();
     lineTool.activate();
   });
 
   penBtn?.addEventListener("click", () => {
-    console.log("asa");
     lineTool.disable();
+    moveTool.disable();
     penTool.activate();
+  });
+
+  moveBtn?.addEventListener("click", () => {
+    lineTool.disable();
+    moveTool.activate();
+    penTool.disable();
   });
 }
 

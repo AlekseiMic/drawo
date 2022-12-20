@@ -2,7 +2,7 @@ import { Drawer, StylesConfig } from "../Drawer";
 import { ITool } from "../interfaces/ITool";
 import { LineScratch } from "../scratches/LineScratch";
 
-export class Line implements ITool {
+export class LineTool implements ITool {
   private active: boolean = false;
 
   private line: LineScratch | undefined;
