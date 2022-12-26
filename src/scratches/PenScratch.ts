@@ -1,9 +1,11 @@
 import { Drawer, StylesConfig } from "../Drawer";
-import { IScratch } from "../interfaces/IScratch";
+import { IScratch, ScratchState } from "../interfaces/IScratch";
 import { Point } from "../interfaces/Point";
 import { Layer } from "../Layer";
 
 export class PenScratch implements IScratch {
+  state = ScratchState.active;
+
   points: Point[] = [];
 
   config: StylesConfig = { color: "red" };
@@ -24,5 +26,9 @@ export class PenScratch implements IScratch {
 
   getId(): string {
     return Date.now() + "";
+  }
+
+  isIntersects(point: Point, region?: number | undefined): boolean {
+    throw new Error("Method not implemented.");
   }
 }

@@ -1,9 +1,11 @@
-import { Drawer, StylesConfig } from "../Drawer";
-import { IScratch } from "../interfaces/IScratch";
+import { Drawer } from "../Drawer";
+import { IScratch, ScratchState } from "../interfaces/IScratch";
 import { Point } from "../interfaces/Point";
 import { Layer } from "../Layer";
 
 export class LineScratch implements IScratch {
+  state = ScratchState.active;
+
   _start: Point = { x: 0, y: 0 };
 
   _end: Point = { x: 0, y: 0 };
@@ -21,7 +23,15 @@ export class LineScratch implements IScratch {
 
   height: number = 0;
 
-  config: StylesConfig = {};
+  colorPerState: Partial<
+    Record<ScratchState, { r: number; g: number; b: number }>
+  > = {
+    [ScratchState.hovered]: {
+      r: 255,
+      g: 0,
+      b: 255,
+    },
+  };
 
   set start(p: Point) {
     this._start = p;
@@ -33,6 +43,15 @@ export class LineScratch implements IScratch {
     if (this._start) this.process();
   }
 
+  move(p: Point) {
+    this.rect = {
+      left: p.x,
+      top: p.y,
+      right: p.x + this.width,
+      bottom: p.y + this.height,
+    };
+  }
+
   getBoundingRect(): {
     left: number;
     right: number;
@@ -42,11 +61,29 @@ export class LineScratch implements IScratch {
     return this.rect;
   }
 
-  isIntersects(point: Point) {
+  isIntersects(point: Point, region = 0) {
     const index =
       (point.y - this.rect.top) * this.width * 4 +
       (point.x - this.rect.left) * 4;
-    return this.points.has(index);
+
+    if (this.points.has(index)) return true;
+
+    for (let i = 0; i < region; i++) {
+      const y1 = index + i * this.width * 4;
+      const y2 = index - i * this.width * 4;
+      for (let j = 0; j < region; j++) {
+        if (
+          this.points.has(y1 + j * 4) ||
+          this.points.has(y2 - j * 4) ||
+          this.points.has(y1 - j * 4) ||
+          this.points.has(y2 + j * 4)
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   process() {
@@ -102,7 +139,18 @@ export class LineScratch implements IScratch {
 
   draw(layer: Layer, drawer: Drawer) {
     // const start = performance.now();
-    drawer.putImageData(layer, this.points, this.rect.left, this.rect.top);
+
+    drawer.putImageData(
+      layer,
+      this.points,
+      this.rect.left,
+      this.rect.top,
+      this.colorPerState[this.state] ?? {
+        r: 255,
+        g: 0,
+        b: 0,
+      }
+    );
     // console.log(`It took ${performance.now() - start}ms`);
   }
 

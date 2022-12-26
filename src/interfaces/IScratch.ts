@@ -2,7 +2,16 @@ import { Drawer } from "../Drawer";
 import { Layer } from "../Layer";
 import { Point } from "./Point";
 
+export enum ScratchState {
+  "hidden" = 0,
+  "active" = 1,
+  "hovered" = 3,
+  "preview" = 4
+}
+
 export interface IScratch {
+  state: ScratchState;
+
   draw(layer: Layer, drawer: Drawer): void;
 
   getId(): string;
@@ -14,5 +23,7 @@ export interface IScratch {
     bottom: number;
   };
 
-  isIntersects(point: Point): boolean;
+  isIntersects(point: Point, region?: number): boolean;
+
+  move(point: Point): void;
 }

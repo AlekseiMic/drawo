@@ -1,4 +1,4 @@
-import { IScratch } from "./interfaces/IScratch";
+import { IScratch, ScratchState } from "./interfaces/IScratch";
 import { Point } from "./interfaces/Point";
 import { Layer } from "./Layer";
 import { nanoid } from "nanoid";
@@ -27,7 +27,8 @@ export class Drawer {
     this.addResizeListener();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    this.createLayer("preview");
+    const layer = this.createLayer("preview");
+    this._layers[layer.getId()].canvas.zIndex = '1000';
   }
 
   createLayer(id?: string) {
@@ -42,9 +43,10 @@ export class Drawer {
     window.addEventListener("resize", () => {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
-      Object.values(this._layers).forEach(({ canvas }) => {
+      Object.values(this._layers).forEach(({ layer, canvas }) => {
         canvas.width = this.width;
         canvas.height = this.height;
+        this.redraw(layer);
       });
     });
   }
@@ -56,14 +58,13 @@ export class Drawer {
 
   // Check geometry and redraw only touched scratches on layer
   redraw(layer: Layer, scratch?: IScratch) {
-    if (scratch && layer) {
-      scratch.draw(layer, this);
-    } else {
-      for (const layer in this._layers) {
-        const layerObj = this._layers[layer].layer;
-        layerObj.scratches.forEach((s) => s.draw(layerObj, this));
-      }
-    }
+    const layerObj = this._layers[layer.getId()].layer;
+    if (!layerObj) return;
+    if (scratch && layer) return scratch.draw(layerObj, this);
+    this.clear(layer);
+    layerObj.scratches.forEach((s) =>
+      s.state === ScratchState.active ? s.draw(layerObj, this) : {}
+    );
   }
 
   preview(scratch?: IScratch) {
@@ -72,25 +73,49 @@ export class Drawer {
     if (scratch) this.redraw(layer, scratch);
   }
 
-  putImageData(layer: Layer, data: Map<number, Point>, x: number, y: number) {
+  putImageData(
+    layer: Layer,
+    points: Map<number, Point>,
+    x: number,
+    y: number,
+    color: { r: number; g: number; b: number; alpha?: number }
+  ) {
     const { canvas } = this._layers[layer.getId()];
     const ctx = canvas.ctx;
     const imageData = ctx.getImageData(0, 0, this.width, this.height);
-    // const imageData = new ImageData(this.width, this.height);
+    const data = imageData.data;
 
     const lineWidth = imageData.width * 4;
-    for (const [, point] of data) {
-      const idx = (x + point.x) * 4 + (point.y + y) * lineWidth;
-      this.setPixelData(imageData.data, idx);
+    const r = color?.r ?? 255;
+    const g = color?.g ?? 255;
+    const b = color?.b ?? 255;
+    for (const [, point] of points) {
+      const index = (x + point.x) * 4 + (point.y + y) * lineWidth;
+      for (let i = 0; i <= 0; i++) {
+        for (let j = 0; j <= 0; j++) {
+          this.setPixelData(data, index - j * 4 + i * lineWidth, r, g, b);
+          this.setPixelData(data, index - j * 4 - i * lineWidth, r, g, b);
+          this.setPixelData(data, index + j * 4 + i * lineWidth, r, g, b);
+          this.setPixelData(data, index + j * 4 - i * lineWidth, r, g, b);
+        }
+      }
     }
+
     ctx.putImageData(imageData, 0, 0);
   }
 
-  private setPixelData(data: Uint8ClampedArray, idx: number, size = 1) {
-    data[idx] = 255;
-    data[idx + 1] = 255;
-    data[idx + 2] = 255;
-    data[idx + 3] = 255;
+  private setPixelData(
+    data: Uint8ClampedArray,
+    idx: number,
+    r: number,
+    g: number,
+    b: number,
+    alpha = 255
+  ) {
+    data[idx] = r;
+    data[idx + 1] = g;
+    data[idx + 2] = b;
+    data[idx + 3] = alpha;
   }
 
   drawCurve(layer: Layer, points: Point[], config: StylesConfig) {
