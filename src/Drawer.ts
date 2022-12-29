@@ -77,12 +77,10 @@ export class Drawer {
         ? canvas.ctx.getImageData(0, 0, this.width, this.height)
         : new ImageData(this.width, this.height);
 
-    // const start = performance.now();
     for (const s of items) {
       if (onlyActive && s.state !== ScratchState.active) continue;
       s.draw(imageData, this);
     }
-    // console.log(`draw: ${performance.now() - start}ms`);
 
     canvas.ctx.putImageData(imageData, 0, 0);
   }
