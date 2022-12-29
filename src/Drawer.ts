@@ -1,8 +1,10 @@
 import { IScratch, ScratchState } from "./interfaces/IScratch";
-import { Point } from "./interfaces/Point";
 import { Layer } from "./Layer";
 import { nanoid } from "nanoid";
 import { Canvas } from "./Canvas";
+import { DrawService } from "./DrawService";
+import { Color } from "./interfaces/Color";
+import { Pointable } from "./interfaces/Pointable";
 
 export type StylesConfig = {
   color?: string;
@@ -10,13 +12,42 @@ export type StylesConfig = {
 };
 
 export class Drawer {
-  private _layers: Record<string, { layer: Layer; canvas: Canvas }> = {};
+  private _layers: Record<
+    string,
+    { data?: ImageData; layer: Layer; canvas: Canvas }
+  > = {};
 
   private _activeLayer: string | undefined;
 
-  public width: number = 0;
+  private _rect = {
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  };
 
-  public height: number = 0;
+  private drawService = new DrawService();
+
+  private stateColors: Partial<Record<ScratchState, Color>> = {
+    [ScratchState.hovered]: { r: 150, g: 0, b: 255, a: 190 },
+    [ScratchState.dragged]: { r: 255, g: 0, b: 0, a: 190 },
+  };
+
+  get width() {
+    return this._rect.right - this._rect.left;
+  }
+
+  get height() {
+    return this._rect.bottom - this._rect.top;
+  }
+
+  set width(w: number) {
+    this._rect.right = this._rect.left + w;
+  }
+
+  set height(h: number) {
+    this._rect.bottom = this._rect.top + h;
+  }
 
   get active() {
     if (!this._activeLayer) return null;
@@ -25,179 +56,86 @@ export class Drawer {
 
   constructor(private _container: HTMLDivElement) {
     this.addResizeListener();
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    const layer = this.createLayer("preview");
-    this._layers[layer.getId()].canvas.zIndex = '1000';
+    this.updateSize();
+    this.createLayer("preview", false, 1000);
   }
 
-  createLayer(id?: string) {
-    const layer = new Layer(id ?? nanoid());
-    layer.drawer = this;
-    this.addLayer(layer);
-    this._activeLayer = layer.getId();
-    return layer;
-  }
-
-  private addResizeListener() {
-    window.addEventListener("resize", () => {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      Object.values(this._layers).forEach(({ layer, canvas }) => {
-        canvas.width = this.width;
-        canvas.height = this.height;
-        this.redraw(layer);
-      });
-    });
-  }
-
-  clear(layer: Layer) {
-    const canvas = this._layers[layer.getId()].canvas;
-    canvas.ctx.clearRect(0, 0, this.width, this.height);
+  getColorForState(
+    state: ScratchState,
+    fallback: Color = { r: 255, g: 255, b: 255, a: 255 }
+  ): Color {
+    return this.stateColors[state] ?? fallback;
   }
 
   // Check geometry and redraw only touched scratches on layer
-  redraw(layer: Layer, scratch?: IScratch) {
-    const layerObj = this._layers[layer.getId()].layer;
-    if (!layerObj) return;
-    if (scratch && layer) return scratch.draw(layerObj, this);
-    this.clear(layer);
-    layerObj.scratches.forEach((s) =>
-      s.state === ScratchState.active ? s.draw(layerObj, this) : {}
-    );
+  redraw(l: Layer, clear = false, scratches?: IScratch[], onlyActive = true) {
+    const { canvas, layer } = this._layers[l.id];
+    const items = scratches ?? layer.scratches;
+
+    const imageData =
+      scratches && !clear
+        ? canvas.ctx.getImageData(0, 0, this.width, this.height)
+        : new ImageData(this.width, this.height);
+
+    // const start = performance.now();
+    for (const s of items) {
+      if (onlyActive && s.state !== ScratchState.active) continue;
+      s.draw(imageData, this);
+    }
+    // console.log(`draw: ${performance.now() - start}ms`);
+
+    canvas.ctx.putImageData(imageData, 0, 0);
   }
 
-  preview(scratch?: IScratch) {
+  preview(scratches?: IScratch[]) {
     const layer = this._layers["preview"].layer;
-    this.clear(layer);
-    if (scratch) this.redraw(layer, scratch);
+    this.redraw(layer, true, scratches, false);
   }
 
-  putImageData(
-    layer: Layer,
-    points: Map<number, Point>,
-    x: number,
-    y: number,
-    color: { r: number; g: number; b: number; alpha?: number }
-  ) {
-    const { canvas } = this._layers[layer.getId()];
-    const ctx = canvas.ctx;
-    const imageData = ctx.getImageData(0, 0, this.width, this.height);
-    const data = imageData.data;
-
-    const lineWidth = imageData.width * 4;
-    const r = color?.r ?? 255;
-    const g = color?.g ?? 255;
-    const b = color?.b ?? 255;
-    for (const [, point] of points) {
-      const index = (x + point.x) * 4 + (point.y + y) * lineWidth;
-      for (let i = 0; i <= 0; i++) {
-        for (let j = 0; j <= 0; j++) {
-          this.setPixelData(data, index - j * 4 + i * lineWidth, r, g, b);
-          this.setPixelData(data, index - j * 4 - i * lineWidth, r, g, b);
-          this.setPixelData(data, index + j * 4 + i * lineWidth, r, g, b);
-          this.setPixelData(data, index + j * 4 - i * lineWidth, r, g, b);
-        }
-      }
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-  }
-
-  private setPixelData(
-    data: Uint8ClampedArray,
-    idx: number,
-    r: number,
-    g: number,
-    b: number,
-    alpha = 255
-  ) {
-    data[idx] = r;
-    data[idx + 1] = g;
-    data[idx + 2] = b;
-    data[idx + 3] = alpha;
-  }
-
-  drawCurve(layer: Layer, points: Point[], config: StylesConfig) {
-    const { canvas } = this._layers[layer.getId()];
-    const ctx = canvas.ctx;
-    if (points.length <= 1) return;
-    if (points.length === 2) {
-      return this.drawLine(layer, points[0], points[1], config);
-    }
-
-    if (config) {
-      canvas.ctx.save();
-      canvas.applyToolStyles(config);
-    }
-
-    let i = 0;
-
-    ctx.beginPath();
-    ctx.moveTo(points[i].x, points[i].y);
-
-    for (i = 1; i < points.length - 2; i++) {
-      const deltaX = (points[i].x + points[i + 1].x) / 2;
-      const deltaY = (points[i].y + points[i + 1].y) / 2;
-      ctx.quadraticCurveTo(points[i].x, points[i].y, deltaX, deltaY);
-    }
-
-    ctx.quadraticCurveTo(
-      points[i].x,
-      points[i].y,
-      points[i + 1].x,
-      points[i + 1].y
+  putImageData(imageData: ImageData, scratch: IScratch & Pointable) {
+    this.drawService.drawPixels(
+      imageData,
+      scratch,
+      this.getColorForState(scratch.state, scratch.color)
     );
-    ctx.stroke();
-
-    if (config) canvas.ctx.restore();
   }
 
-  drawPoint(layer: Layer, p: Point, config?: StylesConfig) {
-    const canvas = this._layers[layer.getId()].canvas;
-    const ctx = canvas.ctx;
-
-    if (config) {
-      canvas.ctx.save();
-      canvas.applyToolStyles(config);
-    }
-
-    ctx.fillRect(p.x, p.y, 1, 1);
-
-    if (config) canvas.ctx.restore();
+  createLayer(id?: string, setActive = true, zIndex?: number) {
+    const layer = new Layer(id ?? nanoid());
+    this.addLayer(layer, zIndex);
+    if (setActive) this._activeLayer = layer.id;
+    return layer;
   }
 
-  drawLine(layer: Layer, start: Point, end: Point, config?: StylesConfig) {
-    const canvas = this._layers[layer.getId()].canvas;
-    const ctx = canvas.ctx;
-
-    if (config) {
-      canvas.ctx.save();
-      canvas.applyToolStyles(config);
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.closePath();
-    ctx.stroke();
-
-    if (config) canvas.ctx.restore();
-  }
-
-  addLayer(layer: Layer) {
+  addLayer(layer: Layer, zIndex?: number) {
     const el = document.createElement("canvas");
-    el.id = layer.getId();
-    this._container.appendChild(el);
-    const canvas = new Canvas(el);
+    el.id = layer.id;
 
+    const canvas = new Canvas(el);
     canvas.width = this.width;
     canvas.height = this.height;
+    canvas.zIndex = (zIndex ?? Object.keys(this._layers).length) + "";
 
-    this._layers[layer.getId()] = { layer, canvas };
+    this._container.appendChild(el);
+    this._layers[layer.id] = { layer, canvas };
   }
 
   removeLayer(layer: Layer) {
-    delete this._layers[layer.getId()];
+    this._layers[layer.id].canvas.remove();
+    delete this._layers[layer.id];
+  }
+
+  private addResizeListener() {
+    window.addEventListener("resize", () => this.updateSize());
+  }
+  private updateSize() {
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+
+    Object.values(this._layers).forEach(({ layer, canvas }) => {
+      canvas.width = this.width;
+      canvas.height = this.height;
+      this.redraw(layer);
+    });
   }
 }

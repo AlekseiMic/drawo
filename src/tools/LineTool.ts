@@ -1,4 +1,4 @@
-import { Drawer, StylesConfig } from "../Drawer";
+import { Drawer } from "../Drawer";
 import { ITool } from "../interfaces/ITool";
 import { LineScratch } from "../scratches/LineScratch";
 
@@ -6,8 +6,6 @@ export class LineTool implements ITool {
   private active: boolean = false;
 
   private line: LineScratch | undefined;
-
-  private _config?: StylesConfig;
 
   private activated: boolean = false;
 
@@ -17,59 +15,45 @@ export class LineTool implements ITool {
     this.mousemoveListener = this.mousemoveListener.bind(this);
   }
 
-  set config(config: StylesConfig) {
-    this._config = config;
+  activate(): void {
+    if (this.activated) return;
+
+    this.activated = true;
+    this.applyListeners();
+  }
+
+  disable(): void {
+    if (!this.activated) return;
+
+    this.activated = false;
+    this.disableListeners();
   }
 
   private mousedownListener(e: MouseEvent) {
     this.line = new LineScratch();
-    this.line.end = {
-      x: e.x,
-      y: e.y,
-    };
-    this.line.start = {
-      x: e.x,
-      y: e.y,
-    };
-    this.line.config = { color: "green", lineWidth: 3 };
+    this.line.end = { x: e.x, y: e.y };
+    this.line.start = { x: e.x, y: e.y };
     this.active = true;
   }
 
   private mouseupListener(e: MouseEvent) {
-    if (this.active && this.line) {
-      this.active = false;
-      this.line.end = {
-        x: e.x,
-        y: e.y,
-      };
-      if (this._config) this.line.config = this._config;
-      this.drawer.active?.add(this.line);
-      this.line = undefined;
-      this.drawer.active?.preview(undefined);
-    }
+    const layer = this.drawer.active;
+    const line = this.line;
+    if (!layer || !this.active || !line) return;
+
+    this.active = false;
+    this.line = undefined;
+
+    line.end = { x: e.x, y: e.y };
+    layer.add(line);
+    this.drawer.redraw(layer, false, [line]);
+    this.drawer.preview(undefined);
   }
 
   private mousemoveListener(e: MouseEvent) {
     if (!this.active || !this.line) return;
-    this.line.end = {
-      x: e.x,
-      y: e.y,
-    };
-    this.drawer.active?.preview(this.line);
-  }
-
-  activate(): void {
-    if (!this.activated) {
-      this.activated = true;
-      this.applyListeners();
-    }
-  }
-
-  disable(): void {
-    if (this.activated) {
-      this.disableListeners();
-      this.activated = false;
-    }
+    this.line.end = { x: e.x, y: e.y };
+    this.drawer.preview([this.line]);
   }
 
   private disableListeners() {

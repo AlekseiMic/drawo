@@ -1,16 +1,19 @@
 import { Drawer } from "../Drawer";
+import { Color } from "../interfaces/Color";
 import { IScratch, ScratchState } from "../interfaces/IScratch";
 import { Point } from "../interfaces/Point";
-import { Layer } from "../Layer";
+import { Pointable } from "../interfaces/Pointable";
 
-export class LineScratch implements IScratch {
+export class LineScratch implements IScratch, Pointable {
+  private _id: string;
+
   state = ScratchState.active;
 
   _start: Point = { x: 0, y: 0 };
 
   _end: Point = { x: 0, y: 0 };
 
-  points: Map<number, Point> = new Map();
+  points: Uint32Array = new Uint32Array();
 
   rect: { left: number; right: number; top: number; bottom: number } = {
     left: 0,
@@ -23,15 +26,16 @@ export class LineScratch implements IScratch {
 
   height: number = 0;
 
-  colorPerState: Partial<
-    Record<ScratchState, { r: number; g: number; b: number }>
-  > = {
-    [ScratchState.hovered]: {
-      r: 255,
-      g: 0,
-      b: 255,
-    },
+  color: Color = {
+    r: 155,
+    g: 200,
+    b: 0,
+    a: 154,
   };
+
+  constructor() {
+    this._id = Date.now() + "";
+  }
 
   set start(p: Point) {
     this._start = p;
@@ -45,11 +49,14 @@ export class LineScratch implements IScratch {
 
   move(p: Point) {
     this.rect = {
-      left: p.x,
-      top: p.y,
-      right: p.x + this.width,
-      bottom: p.y + this.height,
+      left: this.rect.left + p.x,
+      top: this.rect.top + p.y,
+      right: this.rect.right + p.x,
+      bottom: this.rect.bottom + p.y,
     };
+
+    this._start = { x: this._start.x + p.x, y: this._start.y + p.y };
+    this._end = { x: this._end.x + p.x, y: this._end.y + p.y };
   }
 
   getBoundingRect(): {
@@ -61,29 +68,17 @@ export class LineScratch implements IScratch {
     return this.rect;
   }
 
-  isIntersects(point: Point, region = 0) {
-    const index =
-      (point.y - this.rect.top) * this.width * 4 +
-      (point.x - this.rect.left) * 4;
+  isIntersects(point: Point, region = 1) {
+    const distance =
+      Math.abs(
+        (this._end.x - this._start.x) * (this._start.y - point.y) -
+          (this._start.x - point.x) * (this._end.y - this._start.y)
+      ) /
+      Math.sqrt(
+        (this._end.x - this._start.x) ** 2 + (this._end.y - this._start.y) ** 2
+      );
 
-    if (this.points.has(index)) return true;
-
-    for (let i = 0; i < region; i++) {
-      const y1 = index + i * this.width * 4;
-      const y2 = index - i * this.width * 4;
-      for (let j = 0; j < region; j++) {
-        if (
-          this.points.has(y1 + j * 4) ||
-          this.points.has(y2 - j * 4) ||
-          this.points.has(y1 - j * 4) ||
-          this.points.has(y2 + j * 4)
-        ) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return distance <= region;
   }
 
   process() {
@@ -91,6 +86,7 @@ export class LineScratch implements IScratch {
     const top = Math.min(this._start.y, this._end.y);
     const right = Math.max(this._start.x, this._end.x);
     const bottom = Math.max(this._start.y, this._end.y);
+
     const width = right - left + 1;
     const height = bottom - top + 1;
 
@@ -99,10 +95,11 @@ export class LineScratch implements IScratch {
     this.rect = { left, top, right, bottom };
 
     const x1 = this._start.x;
-    const x2 = this._end.x;
-
     const y1 = this._start.y;
+
+    const x2 = this._end.x;
     const y2 = this._end.y;
+
 
     const dx = Math.abs(x2 - x1);
     const sx = x1 < x2 ? 1 : -1;
@@ -115,15 +112,16 @@ export class LineScratch implements IScratch {
     let e2;
     let er = dx + dy;
 
-    this.points = new Map();
-
     if (width <= 0 || height <= 0) return;
 
-    // const start = performance.now();
+    const points = [];
+
+    let i = 0;
     while (true) {
       if (x === x2 && y === y2) break;
-      const index = (y - top) * width * 4 + (x - left) * 4;
-      this.points.set(index, { x: x - left, y: y - top });
+      points[i++] = x - left;
+      points[i++] = y - top;
+
       e2 = 2 * er;
       if (e2 > dy) {
         er += dy;
@@ -134,27 +132,15 @@ export class LineScratch implements IScratch {
         y += sy;
       }
     }
-    // console.log(`Calculated in: ${performance.now() - start}ms`);
+
+    this.points = new Uint32Array(points);
   }
 
-  draw(layer: Layer, drawer: Drawer) {
-    // const start = performance.now();
-
-    drawer.putImageData(
-      layer,
-      this.points,
-      this.rect.left,
-      this.rect.top,
-      this.colorPerState[this.state] ?? {
-        r: 255,
-        g: 0,
-        b: 0,
-      }
-    );
-    // console.log(`It took ${performance.now() - start}ms`);
+  draw(data: ImageData, drawer: Drawer) {
+    drawer.putImageData(data, this);
   }
 
-  getId(): string {
-    return Date.now() + "";
+  get id(): string {
+    return this._id;
   }
 }

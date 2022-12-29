@@ -1,17 +1,29 @@
-import { StylesConfig } from "./Drawer";
-
 export class Canvas {
   private _context: CanvasRenderingContext2D;
+
+  private _width: number = 0;
+
+  private _height: number = 0;
 
   get ctx() {
     return this._context;
   }
 
+  get width() {
+    return this._width;
+  }
+
+  get height() {
+    return this._height;
+  }
+
   set width(width: number) {
+    this._width = width;
     this._element.width = width;
   }
 
   set height(height: number) {
+    this._height = height;
     this._element.height = height;
   }
 
@@ -20,11 +32,17 @@ export class Canvas {
   }
 
   constructor(private _element: HTMLCanvasElement) {
-    const context = this._element.getContext("2d");
+    const context = this._element.getContext("2d", {
+      willReadFrequently: true,
+    });
+
     if (!context) throw new Error("Canvas not created!");
+
     const dpr = window.devicePixelRatio;
+
     this._context = context;
     this._context.scale(dpr, dpr);
+
     this.init();
   }
 
@@ -35,10 +53,7 @@ export class Canvas {
     this._element.style.backgroundColor = "transparent";
   }
 
-  public applyToolStyles(config: StylesConfig) {
-    const ctx = this.ctx;
-    ctx.lineWidth = config.lineWidth ?? 10;
-    ctx.strokeStyle = config.color ?? "white";
-    ctx.fillStyle = config.color ?? "white";
+  remove() {
+    this._element.remove();
   }
 }
