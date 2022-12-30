@@ -20,9 +20,9 @@ export class Drawer {
   private _activeLayer: string | undefined;
 
   private _rect = {
-    left: 0,
+    left: 50,
     right: 0,
-    top: 0,
+    top: 50,
     bottom: 0,
   };
 
@@ -32,6 +32,10 @@ export class Drawer {
     [ScratchState.hovered]: { r: 150, g: 0, b: 255, a: 190 },
     [ScratchState.dragged]: { r: 255, g: 0, b: 0, a: 190 },
   };
+
+  get rect() {
+    return this._rect;
+  }
 
   get width() {
     return this._rect.right - this._rect.left;
@@ -58,6 +62,19 @@ export class Drawer {
     this.addResizeListener();
     this.updateSize();
     this.createLayer("preview", false, 1000);
+  }
+
+  move(x: number, y: number) {
+    this._rect = {
+      left: this._rect.left - x,
+      top: this._rect.top - y,
+      right: this._rect.left + this.width - x,
+      bottom: this._rect.top + this.height - y,
+    };
+
+    Object.values(this._layers).forEach((item) => {
+      this.redraw(item.layer);
+    });
   }
 
   getColorForState(
@@ -94,7 +111,9 @@ export class Drawer {
     this.drawService.drawPixels(
       imageData,
       scratch,
-      this.getColorForState(scratch.state, scratch.color)
+      this.getColorForState(scratch.state, scratch.color),
+      this.rect.left,
+      this.rect.top
     );
   }
 
@@ -126,6 +145,7 @@ export class Drawer {
   private addResizeListener() {
     window.addEventListener("resize", () => this.updateSize());
   }
+
   private updateSize() {
     this.width = window.innerWidth;
     this.height = window.innerHeight;

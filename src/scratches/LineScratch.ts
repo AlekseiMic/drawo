@@ -8,24 +8,25 @@ import { distanceToLine, line } from "../utils/line";
 export class LineScratch implements IScratch, Pointable {
   private _id: string;
 
+  private _start: Point = { x: 0, y: 0 };
+
+  private _end: Point = { x: 0, y: 0 };
+
+  private _rStart: Point = { x: 0, y: 0 };
+
+  private _rEnd: Point = { x: 0, y: 0 };
+
+  private _rect: { left: number; right: number; top: number; bottom: number } =
+    {
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+    };
+
   state = ScratchState.active;
 
-  _start: Point = { x: 0, y: 0 };
-
-  _end: Point = { x: 0, y: 0 };
-
-  _rStart: Point = { x: 0, y: 0 };
-
-  _rEnd: Point = { x: 0, y: 0 };
-
   points: Uint32Array = new Uint32Array();
-
-  _rect: { left: number; right: number; top: number; bottom: number } = {
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-  };
 
   width: number = 0;
 
@@ -56,9 +57,6 @@ export class LineScratch implements IScratch, Pointable {
   }
 
   move(p: Point) {
-    // this._start = { x: this._start.x + p.x, y: this._start.y + p.y };
-    // this._end = { x: this._end.x + p.x, y: this._end.y + p.y };
-    // this.updateRect();
     this._rect = {
       left: this._rect.left + p.x,
       top: this._rect.top + p.y,
@@ -68,26 +66,25 @@ export class LineScratch implements IScratch, Pointable {
   }
 
   updateRect() {
-    const left = Math.min(this._start.x, this._end.x);
-    const top = Math.min(this._start.y, this._end.y);
-    const right = Math.max(this._start.x, this._end.x);
-    const bottom = Math.max(this._start.y, this._end.y);
+    this._rect = {
+      left: Math.min(this._start.x, this._end.x),
+      top: Math.min(this._start.y, this._end.y),
+      right: Math.max(this._start.x, this._end.x),
+      bottom: Math.max(this._start.y, this._end.y),
+    };
 
     this._rStart = {
-      x: this._start.x - left,
-      y: this._start.y - top,
+      x: this._start.x - this._rect.left,
+      y: this._start.y - this._rect.top,
     };
+
     this._rEnd = {
-      x: this._end.x - left,
-      y: this._end.y - top,
+      x: this._end.x - this._rect.left,
+      y: this._end.y - this._rect.top,
     };
 
-    const width = right - left + 1;
-    const height = bottom - top + 1;
-
-    this.width = width;
-    this.height = height;
-    this._rect = { left, top, right, bottom };
+    this.width = this._rect.right - this._rect.left + 1;
+    this.height = this._rect.bottom - this._rect.top + 1;
   }
 
   isIntersects(point: Point, region = 1) {
@@ -108,15 +105,8 @@ export class LineScratch implements IScratch, Pointable {
 
   process() {
     this.updateRect();
-
     if (this.width <= 0 || this.height <= 0) return;
-
-    this.points = new Uint32Array(
-      line(this._start, this._end, {
-        x: this.rect.left,
-        y: this.rect.top,
-      })
-    );
+    this.points = new Uint32Array(line(this._rStart, this._rEnd));
   }
 
   draw(data: ImageData, drawer: Drawer) {

@@ -1,6 +1,6 @@
 import { Point } from "../interfaces/Point";
 
-export const line = (p1: Point, p2: Point, pos: Point) => {
+export const line = (p1: Point, p2: Point) => {
   const x1 = p1.x;
   const y1 = p1.y;
 
@@ -23,8 +23,8 @@ export const line = (p1: Point, p2: Point, pos: Point) => {
   let i = 0;
   while (true) {
     if (x === x2 && y === y2) break;
-    points[i++] = x - pos.x;
-    points[i++] = y - pos.y;
+    points[i++] = x;
+    points[i++] = y;
 
     e2 = 2 * er;
     if (e2 > dy) {
