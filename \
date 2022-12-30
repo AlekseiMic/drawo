@@ -6,22 +6,26 @@ export class DrawService {
   drawPixels(
     imageData: ImageData,
     scratch: IScratch & Pointable,
-    color: Color,
-    minX = 0,
-    minY = 0
+    color: Color
   ) {
     const data = imageData.data;
     const points = scratch.points;
     const width = imageData.width;
     const height = imageData.height;
+    const offset = scratch.rect;
 
-    const offsetX = scratch.rect.left - minX;
-    const offsetY = scratch.rect.top - minY;
+    const offsetX = offset.left;
+    const offsetY = offset.top;
+
+    const minX = 0;
+    const minY = 0;
+    const maxX = minX + width;
+    const maxY = minY + height;
 
     for (let p = 0; p < points.length - 6; p = p + 2) {
       const x = points[p] + offsetX;
       const y = points[p + 1] + offsetY;
-      if (x >= width || y >= height || y <= 0 || x <= 0) continue;
+      if (x > maxX || y > maxY || y < minY || x < minX) continue;
 
       const idx = (y * width + x) * 4;
       data[idx] = color.r;

@@ -31,8 +31,10 @@ export class LineTool implements ITool {
 
   private mousedownListener(e: MouseEvent) {
     this.line = new LineScratch();
-    this.line.end = { x: e.x, y: e.y };
-    this.line.start = { x: e.x, y: e.y };
+    const offsetX = this.drawer.rect.left;
+    const offsetY = this.drawer.rect.top;
+    this.line.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this.line.start = { x: e.x + offsetX, y: e.y + offsetY };
     this.active = true;
   }
 
@@ -44,7 +46,9 @@ export class LineTool implements ITool {
     this.active = false;
     this.line = undefined;
 
-    line.end = { x: e.x, y: e.y };
+    const offsetX = this.drawer.rect.left;
+    const offsetY = this.drawer.rect.top;
+    line.end = { x: e.x + offsetX, y: e.y + offsetY };
     layer.add(line);
     this.drawer.redraw(layer, false, [line]);
     this.drawer.preview(undefined);
@@ -52,7 +56,9 @@ export class LineTool implements ITool {
 
   private mousemoveListener(e: MouseEvent) {
     if (!this.active || !this.line) return;
-    this.line.end = { x: e.x, y: e.y };
+    const offsetX = this.drawer.rect.left;
+    const offsetY = this.drawer.rect.top;
+    this.line.end = { x: e.x + offsetX, y: e.y + offsetY };
     this.drawer.preview([this.line]);
   }
 

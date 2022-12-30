@@ -52,6 +52,7 @@ export class PenScratch implements IScratch, Pointable {
       if (top === 0 || p.y < top) top = p.y;
       if (p.y > bottom) bottom = p.y;
     });
+
     this.width = right - left;
     this.height = bottom - top;
     this._rect = { left, top, bottom, right };
@@ -68,9 +69,9 @@ export class PenScratch implements IScratch, Pointable {
     this.updateRect();
     const result = [];
     let prev = null;
-    for (const p1 of this._points) {
+    for (const p1 of this._rPoints) {
       if (prev) {
-        result.push(...line(prev, p1, { x: this.rect.left, y: this.rect.top }));
+        result.push(...line(prev, p1));
       }
       prev = p1;
     }
