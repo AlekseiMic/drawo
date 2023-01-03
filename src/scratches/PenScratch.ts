@@ -11,6 +11,8 @@ export class PenScratch implements IScratch, Pointable {
   private _points: Point[] = [];
 
   private _rPoints: Point[] = [];
+  
+  private thickness = 1;
 
   state = ScratchState.active;
 
@@ -71,7 +73,7 @@ export class PenScratch implements IScratch, Pointable {
     let prev = null;
     for (const p1 of this._rPoints) {
       if (prev) {
-        result.push(...line(prev, p1));
+        result.push(...line(prev, p1, this.thickness));
       }
       prev = p1;
     }

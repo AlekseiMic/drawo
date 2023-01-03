@@ -1,6 +1,6 @@
 import { Point } from "../interfaces/Point";
 
-export const line = (p1: Point, p2: Point) => {
+export const line = (p1: Point, p2: Point, thickness = 0) => {
   const x1 = p1.x;
   const y1 = p1.y;
 
@@ -20,18 +20,23 @@ export const line = (p1: Point, p2: Point) => {
 
   const points = [];
 
-  let i = 0;
-  while (true) {
-    if (x === x2 && y === y2) break;
-    points[i++] = x;
-    points[i++] = y;
+  const wd = thickness === 1 ? 0 : Math.floor((thickness + 1) / 2);
 
+  while (true) {
     e2 = 2 * er;
-    if (e2 > dy) {
+    if (e2 >= dy) {
+      for (let i = -wd; i <= wd; i++) {
+        points.push(x, y + i);
+      }
+      if (x === x2) break;
       er += dy;
       x += sx;
     }
-    if (e2 < dx) {
+    if (e2 <= dx) {
+      for (let i = -wd; i <= wd; i++) {
+        points.push(x + i, y);
+      }
+      if (y === y2) break;
       er += dx;
       y += sy;
     }
