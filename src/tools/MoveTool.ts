@@ -83,7 +83,7 @@ export class MoveTool implements ITool {
   private isHovers(s: IScratch, p: Point) {
     if (s.state === ScratchState.hidden) return;
     const rect = s.rect;
-    const region = 3;
+    const region = 10;
     if (rect.left - region >= p.x || rect.right + region <= p.x) return;
     if (rect.top - region >= p.y || rect.bottom + region <= p.y) return;
     return s.isIntersects(p, region);

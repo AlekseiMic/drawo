@@ -15,6 +15,8 @@ export class LineScratch implements IScratch, Pointable {
   private _rStart: Point = { x: 0, y: 0 };
 
   private _rEnd: Point = { x: 0, y: 0 };
+  
+  private thickness = 3;
 
   private _rect: { left: number; right: number; top: number; bottom: number } =
     {
@@ -67,10 +69,10 @@ export class LineScratch implements IScratch, Pointable {
 
   updateRect() {
     this._rect = {
-      left: Math.min(this._start.x, this._end.x),
-      top: Math.min(this._start.y, this._end.y),
-      right: Math.max(this._start.x, this._end.x),
-      bottom: Math.max(this._start.y, this._end.y),
+      left: Math.min(this._start.x - this.thickness, this._end.x - this.thickness),
+      top: Math.min(this._start.y - this.thickness, this._end.y - this.thickness),
+      right: Math.max(this._start.x - this.thickness, this._end.x - this.thickness),
+      bottom: Math.max(this._start.y - this.thickness, this._end.y - this.thickness),
     };
 
     this._rStart = {
@@ -106,7 +108,7 @@ export class LineScratch implements IScratch, Pointable {
   process() {
     this.updateRect();
     if (this.width <= 0 || this.height <= 0) return;
-    this.points = new Uint32Array(line(this._rStart, this._rEnd));
+    this.points = new Uint32Array(line(this._rStart, this._rEnd, this.thickness));
   }
 
   draw(data: ImageData, drawer: Drawer) {
