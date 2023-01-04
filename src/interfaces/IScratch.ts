@@ -7,7 +7,7 @@ export enum ScratchState {
   "active" = 1,
   "hovered" = 3,
   "preview" = 4,
-  "dragged" = 4,
+  "dragged" = 5,
 }
 
 export interface IScratch {
@@ -16,6 +16,8 @@ export interface IScratch {
   state: ScratchState;
 
   color: Color;
+
+  user: string;
 
   rect: {
     left: number;

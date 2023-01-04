@@ -1,29 +1,17 @@
 export class Canvas {
   private _context: CanvasRenderingContext2D;
 
-  private _width: number = 0;
-
-  private _height: number = 0;
+  private _element: HTMLCanvasElement;
 
   get ctx() {
     return this._context;
   }
 
-  get width() {
-    return this._width;
-  }
-
-  get height() {
-    return this._height;
-  }
-
   set width(width: number) {
-    this._width = width;
     this._element.width = width;
   }
 
   set height(height: number) {
-    this._height = height;
     this._element.height = height;
   }
 
@@ -31,7 +19,11 @@ export class Canvas {
     this._element.style.zIndex = zIndex;
   }
 
-  constructor(private _element: HTMLCanvasElement) {
+  constructor(private _parent: HTMLDivElement, id: string, zIndex: string) {
+    this._element = document.createElement("canvas");
+    this._element.id = id;
+    this.zIndex = zIndex;
+
     const context = this._element.getContext("2d", {
       willReadFrequently: true,
     });
@@ -42,8 +34,9 @@ export class Canvas {
 
     this._context = context;
     this._context.scale(dpr, dpr);
-
     this.init();
+
+    this._parent.appendChild(this._element);
   }
 
   init() {

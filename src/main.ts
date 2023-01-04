@@ -1,4 +1,4 @@
-import { Drawer } from "./Drawer";
+import { Manager } from "./Manager";
 import "./style.scss";
 import { LineTool } from "./tools/LineTool";
 import { MoveTool } from "./tools/MoveTool";
@@ -7,39 +7,33 @@ import { PenTool } from "./tools/PenTool";
 function init() {
   const app = document.querySelector<HTMLDivElement>("#app");
   if (!app) return;
-  const drawer = new Drawer(app);
-  drawer.createLayer();
-  initToolbar(drawer);
+  const manager = new Manager("user123", app);
+  initToolbar(manager);
+  manager.start();
 }
 
-function initToolbar(drawer: Drawer) {
+function initToolbar(manager: Manager) {
   const lineBtn = document.querySelector<HTMLButtonElement>("#line_tool");
   const penBtn = document.querySelector<HTMLButtonElement>("#pen_tool");
   const moveBtn = document.querySelector<HTMLButtonElement>("#move_tool");
-  const lineTool = new LineTool(drawer);
-  const moveTool = new MoveTool(drawer);
-  const penTool = new PenTool(drawer);
+  manager.toolPanel.addTool("line", LineTool);
+  manager.toolPanel.addTool("move", MoveTool);
+  manager.toolPanel.addTool("pen", PenTool);
 
   lineBtn?.addEventListener("mousedown", (e) => {
-    penTool.disable();
-    moveTool.disable();
-    lineTool.activate();
+    manager.toolPanel.setActive("line");
     e.stopPropagation();
     e.stopImmediatePropagation();
   });
 
   penBtn?.addEventListener("mousedown", (e) => {
-    lineTool.disable();
-    moveTool.disable();
-    penTool.activate();
+    manager.toolPanel.setActive("pen");
     e.stopPropagation();
     e.stopImmediatePropagation();
   });
 
   moveBtn?.addEventListener("mousedown", (e) => {
-    lineTool.disable();
-    moveTool.activate();
-    penTool.disable();
+    manager.toolPanel.setActive("move");
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();

@@ -11,7 +11,7 @@ export class PenScratch implements IScratch, Pointable {
   private _points: Point[] = [];
 
   private _rPoints: Point[] = [];
-  
+
   private thickness = 1;
 
   state = ScratchState.active;
@@ -39,7 +39,7 @@ export class PenScratch implements IScratch, Pointable {
     return this._id;
   }
 
-  constructor() {
+  constructor(public user: string) {
     this._id = Date.now() + "";
   }
 
