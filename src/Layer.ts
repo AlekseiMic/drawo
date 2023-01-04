@@ -1,27 +1,29 @@
+import { nanoid } from "nanoid";
 import { IScratch } from "./interfaces/IScratch";
 
+export type LayerOptions = Partial<{}>;
+
 export class Layer {
-  private _scratches: IScratch[] = [];
+  public id: string;
 
-  private _id: string;
-
-  constructor(id: string) {
-    this._id = id;
-  }
+  private _scratches: Record<string, IScratch> = {};
 
   get scratches() {
     return Object.values(this._scratches);
   }
 
   set scratches(data: IScratch[]) {
-    this._scratches = data;
+    this._scratches = data.reduce((acc: Record<string, IScratch>, scratch) => {
+      acc[scratch.id] = scratch;
+      return acc;
+    }, {});
   }
 
-  get id(): string {
-    return this._id;
+  constructor(id?: string) {
+    this.id = id ?? nanoid();
   }
 
   add(scratch: IScratch) {
-    this._scratches.push(scratch);
+    this._scratches[scratch.id] = scratch;
   }
 }

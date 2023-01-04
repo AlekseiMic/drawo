@@ -26,19 +26,23 @@ h1 {
   font-size: 2.6rem;
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
 #app {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
+  flex-grow: 1;
 }
 
 .header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10000;
+  position: relative;
+  flex-shrink: 0;
   height: 55px;
+  width: 100%;
   background: #333;
   box-sizing: border-box;
   border-bottom: 1px solid #555;

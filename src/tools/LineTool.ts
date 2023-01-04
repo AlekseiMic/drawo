@@ -1,15 +1,20 @@
-import { Drawer } from "../Drawer";
+import { nanoid } from "nanoid";
 import { ITool } from "../interfaces/ITool";
-import { LineScratch } from "../scratches/LineScratch";
+import { Point } from "../interfaces/Point";
+import { Manager } from "../Manager";
 
 export class LineTool implements ITool {
   private active: boolean = false;
 
-  private line: LineScratch | undefined;
-
   private activated: boolean = false;
 
-  constructor(private drawer: Drawer) {
+  private start: Point | undefined;
+
+  private end: Point | undefined;
+
+  private id: string | undefined;
+
+  constructor(private manager: Manager) {
     this.mouseupListener = this.mouseupListener.bind(this);
     this.mousedownListener = this.mousedownListener.bind(this);
     this.mousemoveListener = this.mousemoveListener.bind(this);
@@ -30,36 +35,66 @@ export class LineTool implements ITool {
   }
 
   private mousedownListener(e: MouseEvent) {
-    this.line = new LineScratch();
-    const offsetX = this.drawer.rect.left;
-    const offsetY = this.drawer.rect.top;
-    this.line.end = { x: e.x + offsetX, y: e.y + offsetY };
-    this.line.start = { x: e.x + offsetX, y: e.y + offsetY };
+    const offsetX = this.manager.rect.left;
+    const offsetY = this.manager.rect.top;
+    this.start = { x: e.x + offsetX, y: e.y + offsetY };
+    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this.id = nanoid();
     this.active = true;
+    this.manager.dispatch({
+      type: "addScratch",
+      payload: {
+        layoutId: "preview",
+        scratch: "Line",
+        id: this.id,
+        data: {
+          start: this.start,
+          end: this.end,
+        },
+      },
+    });
   }
 
   private mouseupListener(e: MouseEvent) {
-    const layer = this.drawer.active;
-    const line = this.line;
-    if (!layer || !this.active || !line) return;
-
+    const layer = this.manager.activeLayer;
+    if (!layer || !this.active) return;
     this.active = false;
-    this.line = undefined;
 
-    const offsetX = this.drawer.rect.left;
-    const offsetY = this.drawer.rect.top;
-    line.end = { x: e.x + offsetX, y: e.y + offsetY };
-    layer.add(line);
-    this.drawer.redraw(layer, false, [line]);
-    this.drawer.preview(undefined);
+    const offsetX = this.manager.rect.left;
+    const offsetY = this.manager.rect.top;
+    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this.manager.dispatch({
+      type: "moveScratch",
+      payload: {
+        fromLayer: "preview",
+        toLayer: layer.id,
+        id: this.id,
+        scratch: "Line",
+        data: {
+          start: this.start,
+          end: this.end,
+        },
+      },
+    });
   }
 
   private mousemoveListener(e: MouseEvent) {
-    if (!this.active || !this.line) return;
-    const offsetX = this.drawer.rect.left;
-    const offsetY = this.drawer.rect.top;
-    this.line.end = { x: e.x + offsetX, y: e.y + offsetY };
-    this.drawer.preview([this.line]);
+    if (!this.active) return;
+    const offsetX = this.manager.rect.left;
+    const offsetY = this.manager.rect.top;
+    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this.manager.dispatch({
+      type: "changeScratch",
+      payload: {
+        layerId: "preview",
+        id: this.id,
+        scratch: "Line",
+        data: {
+          start: this.start,
+          end: this.end,
+        },
+      },
+    });
   }
 
   private disableListeners() {
