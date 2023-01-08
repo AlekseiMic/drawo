@@ -1,6 +1,7 @@
 import { Drawer } from "../Drawer";
 import { Color } from "./Color";
 import { Point } from "./Point";
+import { Rect } from "./Rect";
 
 export enum ScratchState {
   "hidden" = 0,
@@ -13,22 +14,33 @@ export enum ScratchState {
 export interface IScratch {
   id: string;
 
-  state: ScratchState;
+  state?: ScratchState;
 
-  color: Color;
+  color?: Color;
+
+  thickness: number;
 
   user: string;
 
-  rect: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  };
+  rect: Rect;
 
-  draw(data: ImageData, drawer: Drawer): void;
+  width: number;
+
+  height: number;
+
+  isReady: boolean;
+
+  prepare(): void;
+
+  change(data: any): void;
+
+  draw(data: ImageData, drawer: Drawer, rect?: Rect): void;
+
+  isIntersectsRect(rect: Rect): boolean;
 
   isIntersects(point: Point, region?: number): boolean;
 
   move(point: Point): void;
+
+  process(): void;
 }

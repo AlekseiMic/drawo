@@ -1,4 +1,5 @@
 import { Manager } from "./Manager";
+import ObserverReducer from "./ObserverReducer";
 import "./style.scss";
 import { LineTool } from "./tools/LineTool";
 import { MoveTool } from "./tools/MoveTool";
@@ -16,24 +17,26 @@ function initToolbar(manager: Manager) {
   const lineBtn = document.querySelector<HTMLButtonElement>("#line_tool");
   const penBtn = document.querySelector<HTMLButtonElement>("#pen_tool");
   const moveBtn = document.querySelector<HTMLButtonElement>("#move_tool");
-  manager.toolPanel.addTool("line", LineTool);
-  manager.toolPanel.addTool("move", MoveTool);
-  manager.toolPanel.addTool("pen", PenTool);
+  manager.toolPanel.addTool(LineTool);
+  manager.toolPanel.addTool(MoveTool);
+  manager.toolPanel.addTool(PenTool);
+  manager.addReducer(ObserverReducer);
+  manager.addReducer(manager.toolPanel.gerReducer());
 
   lineBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive("line");
+    manager.toolPanel.setActive(LineTool.name);
     e.stopPropagation();
     e.stopImmediatePropagation();
   });
 
   penBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive("pen");
+    manager.toolPanel.setActive(PenTool.name);
     e.stopPropagation();
     e.stopImmediatePropagation();
   });
 
   moveBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive("move");
+    manager.toolPanel.setActive(MoveTool.name);
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
