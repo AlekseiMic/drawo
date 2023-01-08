@@ -6,4 +6,8 @@ export interface Action {
   timestamp?: number;
 
   user?: string;
+
+  layerId?: string;
+
+  id?: string;
 }

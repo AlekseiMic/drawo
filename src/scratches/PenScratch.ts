@@ -1,46 +1,29 @@
 import { Drawer } from "../Drawer";
-import { Color } from "../interfaces/Color";
-import { IScratch, ScratchState } from "../interfaces/IScratch";
+import { IScratch } from "../interfaces/IScratch";
 import { Point } from "../interfaces/Point";
 import { Pointable } from "../interfaces/Pointable";
+import { Rect } from "../interfaces/Rect";
 import { distanceToLine, line } from "../utils/line";
+import { BaseScratch } from "./BaseScratch";
 
-export class PenScratch implements IScratch, Pointable {
-  private _id: string;
+export class PenScratch extends BaseScratch implements IScratch, Pointable {
+  points: Uint32Array = new Uint32Array();
 
   private _points: Point[] = [];
 
   private _rPoints: Point[] = [];
 
-  private thickness = 1;
-
-  state = ScratchState.active;
-
-  points: Uint32Array = new Uint32Array();
-
-  _rect: { left: number; right: number; top: number; bottom: number } = {
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-  };
-
-  width: number = 0;
-
-  height: number = 0;
-
-  color: Color = { r: 155, g: 200, b: 0, a: 154 };
-
-  get rect() {
-    return this._rect;
+  change(data: any): void {
+    this.state = data.state ?? this.state;
+    this.color = data.color;
+    this.thickness = data.thickness ?? this.thickness;
+    if (data.point) this.addPoint(data.point);
   }
 
-  get id(): string {
-    return this._id;
-  }
-
-  constructor(public user: string) {
-    this._id = Date.now() + "";
+  static create(id: string, user: string, data: any) {
+    const line = new PenScratch(user, id);
+    line.change(data);
+    return line;
   }
 
   updateRect() {
@@ -55,19 +38,24 @@ export class PenScratch implements IScratch, Pointable {
       if (p.y > bottom) bottom = p.y;
     });
 
-    this.width = right - left;
-    this.height = bottom - top;
-    this._rect = { left, top, bottom, right };
+    this._rect = {
+      left: left - this.thickness,
+      top: top - this.thickness,
+      bottom: bottom + this.thickness,
+      right: right + this.thickness,
+    };
+
+    this.width = this._rect.right - this._rect.left;
+    this.height = this._rect.bottom - this._rect.top;
+
     this._rPoints = this._points.map((p) => {
-      return {
-        x: p.x - left,
-        y: p.y - top,
-      };
+      return { x: p.x - this._rect.left, y: p.y - this._rect.top };
     });
   }
 
   process() {
     if (this._points.length < 2) return;
+    this.isReady = true;
     this.updateRect();
     const result = [];
     let prev = null;
@@ -82,29 +70,22 @@ export class PenScratch implements IScratch, Pointable {
 
   addPoint(point: Point) {
     this._points.push(point);
-    this.process();
+    this.isReady = false;
   }
 
-  move(p: Point): void {
-    this._rect = {
-      left: this._rect.left + p.x,
-      top: this._rect.top + p.y,
-      right: this._rect.left + p.x + this.width,
-      bottom: this._rect.top + p.y + this.height,
-    };
-  }
-
-  draw(data: ImageData, drawer: Drawer) {
-    drawer.putImageData(data, this);
+  draw(data: ImageData, drawer: Drawer, rect: Rect) {
+    this.prepare();
+    drawer.drawPixels(data, this, rect);
   }
 
   isIntersects(point: Point, region = 1): boolean {
     let prev = null;
+    const rect = this.rect;
     for (const p1 of this._rPoints) {
-      const left = Math.min(p1.x, prev?.x ?? 0) + this.rect.left;
-      const top = Math.min(p1.y, prev?.y ?? 0) + this.rect.top;
-      const bottom = Math.max(p1.y, prev?.y ?? 0) + this.rect.top;
-      const right = Math.max(p1.x, prev?.x ?? 0) + this.rect.left;
+      const left = Math.min(p1.x, prev?.x ?? 0) + rect.left;
+      const top = Math.min(p1.y, prev?.y ?? 0) + rect.top;
+      const bottom = Math.max(p1.y, prev?.y ?? 0) + rect.top;
+      const right = Math.max(p1.x, prev?.x ?? 0) + rect.left;
       if (
         prev &&
         (left - region <= point.x || left + region <= point.x) &&
@@ -112,8 +93,8 @@ export class PenScratch implements IScratch, Pointable {
         (top - region <= point.y || top + region <= point.y) &&
         (bottom - region >= point.y || bottom + region >= point.y) &&
         distanceToLine(
-          { x: prev.x + this.rect.left, y: prev.y + this.rect.top },
-          { x: p1.x + this.rect.left, y: p1.y + this.rect.top },
+          { x: prev.x + rect.left, y: prev.y + rect.top },
+          { x: p1.x + rect.left, y: p1.y + rect.top },
           point
         ) <= region
       )

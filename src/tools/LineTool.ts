@@ -1,109 +1,107 @@
 import { nanoid } from "nanoid";
+import { Action } from "../interfaces/Action";
+import { ScratchState } from "../interfaces/IScratch";
 import { ITool } from "../interfaces/ITool";
 import { Point } from "../interfaces/Point";
 import { Manager } from "../Manager";
+import { LineScratch } from "../scratches/LineScratch";
+import { BaseTool } from "./BaseTool";
 
-export class LineTool implements ITool {
-  private active: boolean = false;
-
-  private activated: boolean = false;
-
+export class LineTool extends BaseTool implements ITool {
   private start: Point | undefined;
 
   private end: Point | undefined;
 
   private id: string | undefined;
 
-  constructor(private manager: Manager) {
+  constructor(manager: Manager) {
+    super(manager);
+
     this.mouseupListener = this.mouseupListener.bind(this);
     this.mousedownListener = this.mousedownListener.bind(this);
     this.mousemoveListener = this.mousemoveListener.bind(this);
   }
 
-  activate(): void {
-    if (this.activated) return;
-
-    this.activated = true;
-    this.applyListeners();
-  }
-
-  disable(): void {
-    if (!this.activated) return;
-
-    this.activated = false;
-    this.disableListeners();
+  create(a: Required<Action>) {
+    return LineScratch.create(a.id, a.user, a.payload);
   }
 
   private mousedownListener(e: MouseEvent) {
-    const offsetX = this.manager.rect.left;
-    const offsetY = this.manager.rect.top;
-    this.start = { x: e.x + offsetX, y: e.y + offsetY };
-    this.end = { x: e.x + offsetX, y: e.y + offsetY };
-    this.id = nanoid();
     this.active = true;
+    this.updateStartPoint(e);
+    this.updateEndPoint(e);
+    this.id = nanoid();
+
     this.manager.dispatch({
       type: "addScratch",
+      layerId: "preview",
+      id: this.id,
       payload: {
-        layoutId: "preview",
-        scratch: "Line",
-        id: this.id,
-        data: {
-          start: this.start,
-          end: this.end,
-        },
+        tool: this.constructor.name,
+        start: this.start,
+        end: this.end,
+        state: ScratchState.preview,
+        color: this.manager.toolPanel.color,
+        thickness: this.manager.toolPanel.thickness,
       },
     });
   }
 
-  private mouseupListener(e: MouseEvent) {
+  private mouseupListener() {
     const layer = this.manager.activeLayer;
     if (!layer || !this.active) return;
     this.active = false;
 
-    const offsetX = this.manager.rect.left;
-    const offsetY = this.manager.rect.top;
-    this.end = { x: e.x + offsetX, y: e.y + offsetY };
     this.manager.dispatch({
       type: "moveScratch",
+      layerId: "preview",
+      id: this.id,
       payload: {
-        fromLayer: "preview",
-        toLayer: layer.id,
-        id: this.id,
-        scratch: "Line",
-        data: {
-          start: this.start,
-          end: this.end,
-        },
+        layerId: layer.id,
+        state: ScratchState.active,
       },
     });
+
+    this.id = undefined;
   }
 
   private mousemoveListener(e: MouseEvent) {
     if (!this.active) return;
-    const offsetX = this.manager.rect.left;
-    const offsetY = this.manager.rect.top;
-    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this.updateEndPoint(e);
+    this.changeScratch();
+  }
+
+  private changeScratch() {
     this.manager.dispatch({
       type: "changeScratch",
+      layerId: "preview",
+      id: this.id,
       payload: {
-        layerId: "preview",
-        id: this.id,
-        scratch: "Line",
-        data: {
-          start: this.start,
-          end: this.end,
-        },
+        start: this.start,
+        end: this.end,
       },
     });
   }
 
-  private disableListeners() {
+  private updateStartPoint(e: MouseEvent) {
+    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
+    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+    this.start = { x: e.x + offsetX, y: e.y + offsetY };
+  }
+
+  private updateEndPoint(e: MouseEvent) {
+    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
+    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+  }
+
+  protected disableListeners() {
     window.removeEventListener("mousedown", this.mousedownListener);
     window.removeEventListener("mouseup", this.mouseupListener);
     window.removeEventListener("mousemove", this.mousemoveListener);
   }
 
-  private applyListeners() {
+  protected applyListeners() {
     window.addEventListener("mousedown", this.mousedownListener);
     window.addEventListener("mouseup", this.mouseupListener);
     window.addEventListener("mousemove", this.mousemoveListener);

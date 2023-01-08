@@ -1,80 +1,89 @@
+import { nanoid } from "nanoid";
+import { Action } from "../interfaces/Action";
+import { ScratchState } from "../interfaces/IScratch";
 import { ITool } from "../interfaces/ITool";
 import { Manager } from "../Manager";
 import { PenScratch } from "../scratches/PenScratch";
 import { throttle } from "../utils/throttle";
+import { BaseTool } from "./BaseTool";
 
-export class PenTool implements ITool {
-  private active: boolean = false;
+export class PenTool extends BaseTool implements ITool {
+  private id: string | undefined;
 
-  private activated: boolean = false;
-
-  private scratch: PenScratch | undefined;
-
-  constructor(private manager: Manager) {
-    this.mouseupListener = this.mouseupListener.bind(this);
-    this.mousedownListener = this.mousedownListener.bind(this);
-    this.mousemoveListener = throttle(this.mousemoveListener.bind(this), 10);
+  constructor(manager: Manager) {
+    super(manager);
+    this.finishScratch = this.finishScratch.bind(this);
+    this.startScratch = this.startScratch.bind(this);
+    this.addPoint = throttle(this.addPoint.bind(this), 10);
   }
 
-  activate(): void {
-    if (!this.activated) {
-      this.activated = true;
-      this.applyListeners();
-    }
+  create(a: Required<Action>) {
+    return PenScratch.create(a.id, a.user, a.payload);
   }
 
-  disable(): void {
-    if (this.activated) {
-      this.disableListeners();
-      this.activated = false;
-    }
-  }
-
-  private disableListeners() {
-    window.removeEventListener("mousedown", this.mousedownListener);
-    window.removeEventListener("mouseup", this.mouseupListener);
-    window.removeEventListener("mousemove", this.mousemoveListener);
-  }
-
-  private applyListeners() {
-    window.addEventListener("mousedown", this.mousedownListener);
-    window.addEventListener("mouseup", this.mouseupListener);
-    window.addEventListener("mousemove", this.mousemoveListener);
-  }
-
-  private mousedownListener(e: MouseEvent) {
-    this.scratch = new PenScratch(this.manager.user);
-
-    // this.scratch.addPoint({
-    //   x: e.x + this.manager.rect.left,
-    //   y: e.y + this.manager.rect.top,
-    // });
-
+  private startScratch(e: MouseEvent) {
     this.active = true;
+    this.id = nanoid();
+
+    this.manager.dispatch({
+      type: "addScratch",
+      layerId: "preview",
+      id: this.id,
+      payload: {
+        tool: this.constructor.name,
+        state: ScratchState.preview,
+        color: this.manager.toolPanel.color,
+        thickness: this.manager.toolPanel.thickness,
+      },
+    });
+
+    this.addPoint(e);
   }
 
-  private mouseupListener(e: MouseEvent) {
+  private finishScratch() {
     const layer = this.manager.activeLayer;
-    if (!this.active || !this.scratch || !layer) return;
+    if (!this.active || !layer) return;
     this.active = false;
 
-    // this.scratch.addPoint({
-    //   x: e.x + this.manager.rect.left,
-    //   y: e.y + this.manager.rect.top,
-    // });
-
-    // this.manager?.active?.add(this.scratch);
-    // this.drawer?.preview();
-    // this.drawer.redraw(layer, false, [this.scratch]);
-    this.scratch = undefined;
+    this.manager.dispatch({
+      type: "moveScratch",
+      layerId: "preview",
+      id: this.id,
+      payload: {
+        layerId: layer.id,
+        state: ScratchState.active,
+      },
+    });
   }
 
-  private mousemoveListener(e: MouseEvent) {
-    if (!this.active || !this.scratch) return;
-    // this.scratch.addPoint({
-    //   x: e.x + this.manager.rect.left,
-    //   y: e.y + this.manager.rect.top,
-    // });
-    // this.drawer?.preview([this.scratch]);
+  private addPoint(e: MouseEvent) {
+    if (!this.active) return;
+
+    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
+    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+
+    this.manager.dispatch({
+      type: "changeScratch",
+      layerId: "preview",
+      id: this.id,
+      payload: {
+        point: {
+          x: e.x + offsetX,
+          y: e.y + offsetY,
+        },
+      },
+    });
+  }
+
+  protected disableListeners() {
+    window.removeEventListener("mousedown", this.startScratch);
+    window.removeEventListener("mouseup", this.finishScratch);
+    window.removeEventListener("mousemove", this.addPoint);
+  }
+
+  protected applyListeners() {
+    window.addEventListener("mousedown", this.startScratch);
+    window.addEventListener("mouseup", this.finishScratch);
+    window.addEventListener("mousemove", this.addPoint);
   }
 }
