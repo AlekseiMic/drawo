@@ -1,7 +1,8 @@
-import { Action } from "../interfaces/Action";
-import { IScratch } from "../interfaces/IScratch";
-import { ITool } from "../interfaces/ITool";
-import { Manager } from "../Manager";
+/* eslint-disable no-unused-vars */
+import { Action } from '../interfaces/Action';
+import { IScratch } from '../interfaces/IScratch';
+import { ITool } from '../interfaces/ITool';
+import { Manager } from '../Manager';
 
 export abstract class BaseTool implements ITool {
   protected active: boolean = false;

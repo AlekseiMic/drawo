@@ -9,7 +9,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       m.move(a.id, a.payload.x, a.payload.y);
       const shouldResize = m.updateDrawerRect();
       if (shouldResize) {
-        Object.keys(m._layers).forEach((l) => {
+        Object.keys(m.layers).forEach((l) => {
           s.makeFullRedraw(l);
         });
       }

@@ -84,14 +84,14 @@ export class LineTool extends BaseTool implements ITool {
   }
 
   private updateStartPoint(e: MouseEvent) {
-    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
-    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+    const offsetX = this.manager.rect.left - this.manager.offset.x;
+    const offsetY = this.manager.rect.top - this.manager.offset.y;
     this.start = { x: e.x + offsetX, y: e.y + offsetY };
   }
 
   private updateEndPoint(e: MouseEvent) {
-    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
-    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+    const offsetX = this.manager.rect.left - this.manager.offset.x;
+    const offsetY = this.manager.rect.top - this.manager.offset.y;
     this.end = { x: e.x + offsetX, y: e.y + offsetY };
   }
 

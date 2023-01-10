@@ -106,8 +106,8 @@ export class MoveTool extends BaseTool implements ITool {
     }
     const s = this.dragged;
     const point = {
-      x: event.x + this.manager.rect.left - this.manager.offsetLeft,
-      y: event.y + this.manager.rect.top - this.manager.offsetTop,
+      x: event.x + this.manager.rect.left - this.manager.offset.x,
+      y: event.y + this.manager.rect.top - this.manager.offset.y,
     };
     this.drop();
     if (!this.isHovers(s, point)) this.unhover();
@@ -148,8 +148,8 @@ export class MoveTool extends BaseTool implements ITool {
     if (this.canvasDrag) return this.dragCanvas(event);
 
     const p = {
-      x: event.x + this.manager.rect.left - this.manager.offsetLeft,
-      y: event.y + this.manager.rect.top - this.manager.offsetTop,
+      x: event.x + this.manager.rect.left - this.manager.offset.x,
+      y: event.y + this.manager.rect.top - this.manager.offset.y,
     };
 
     if (this.hovered && this.isHovers(this.hovered, p)) return;

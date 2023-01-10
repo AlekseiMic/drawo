@@ -1,46 +1,35 @@
-import { Manager } from "./Manager";
-import ObserverReducer from "./ObserverReducer";
-import "./style.scss";
-import { LineTool } from "./tools/LineTool";
-import { MoveTool } from "./tools/MoveTool";
-import { PenTool } from "./tools/PenTool";
+import { createApp } from 'vue';
+import './style.css';
+import App from './App.vue';
+import * as VueRouter from 'vue-router';
+import { routes } from './routes/index';
+import { VueModule } from './VueModule';
+import BoardModule from './modules/board';
 
-function init() {
-  const app = document.querySelector<HTMLDivElement>("#app");
-  if (!app) return;
-  const manager = new Manager("user123", app);
-  initToolbar(manager);
-  manager.start();
+const router = VueRouter.createRouter({
+  history: VueRouter.createWebHistory(),
+  routes,
+});
+
+function registerModule(module: VueModule) {
+  if (module.route) router.addRoute(module.route);
 }
 
-function initToolbar(manager: Manager) {
-  const lineBtn = document.querySelector<HTMLButtonElement>("#line_tool");
-  const penBtn = document.querySelector<HTMLButtonElement>("#pen_tool");
-  const moveBtn = document.querySelector<HTMLButtonElement>("#move_tool");
-  manager.toolPanel.addTool(LineTool);
-  manager.toolPanel.addTool(MoveTool);
-  manager.toolPanel.addTool(PenTool);
-  manager.addReducer(ObserverReducer);
-  manager.addReducer(manager.toolPanel.gerReducer());
+registerModule(BoardModule);
 
-  lineBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive(LineTool.name);
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-  });
-
-  penBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive(PenTool.name);
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-  });
-
-  moveBtn?.addEventListener("mousedown", (e) => {
-    manager.toolPanel.setActive(MoveTool.name);
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-  });
-}
-
-init();
+const app = createApp(App);
+app.directive('click-outside', {
+  beforeMount: function (el, binding) {
+    el.clickOutsideListener = (event: MouseEvent) => {
+      if (el !== event.target && !el.contains(event.target)) {
+        binding.value();
+      }
+    };
+    document.addEventListener('click', el.clickOutsideListener);
+  },
+  unmounted: function (el) {
+    document.removeEventListener('click', el.clickOutsideListener);
+  },
+});
+app.use(router);
+app.mount('#app');

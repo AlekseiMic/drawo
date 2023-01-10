@@ -1,0 +1,38 @@
+{
+  "root": true,
+  "parser": "vue-eslint-parser",
+  "extends": ["eslint:recommended", "plugin:vue/vue3-recommended", "prettier"],
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "sourceType": "module",
+    "ecmaVersion": 9
+  },
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "plugins": ["import","@typescript-eslint"],
+  "rules": {
+    "import/extensions": [
+      "off",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "dot-notation": "warn",
+    "@typescript-eslint/dot-notation": "off",
+    "no-eval": "error",
+    "@typescript-eslint/no-implied-eval": "off",
+    "no-throw-literal": "error",
+    "@typescript-eslint/no-throw-literal": "off",
+    "@typescript-eslint/return-await": "off",
+    "no-return-await": "error",
+    "class-methods-use-this": "warn",
+    "no-param-reassign": [2, { "props": false }],
+    "no-cond-assign": "error"
+  }
+}
