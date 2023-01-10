@@ -20,12 +20,12 @@ export class ToolPanel {
         case "addScratch": {
           const scratch = this._tools[a.payload.tool].create?.(a);
           if (!scratch) return;
-          m._layers[a.layerId].add(scratch);
+          m.layers[a.layerId].add(scratch);
           s.addNewScratchToDraw(a.layerId, a.id);
           break;
         }
         case "translateScratch": {
-          const scratch = m._layers[a.layerId].getScratch(a.id);
+          const scratch = m.layers[a.layerId].getScratch(a.id);
           if (!scratch) return;
           if (!s.isMarked(a.layerId, a.id)) {
             s.addRectToRedraw(a.layerId, scratch.rect);
@@ -35,7 +35,7 @@ export class ToolPanel {
           break;
         }
         case "changeScratch": {
-          const scratch = m._layers[a.layerId].getScratch(a.id);
+          const scratch = m.layers[a.layerId].getScratch(a.id);
           if (!scratch) return;
           if (!s.isMarked(a.layerId, a.id)) {
             s.addRectToRedraw(a.layerId, scratch.rect);
@@ -45,14 +45,14 @@ export class ToolPanel {
           break;
         }
         case "moveScratch": {
-          const scratch = m._layers[a.layerId].getScratch(a.id);
-          if (!scratch || !m._layers[a.payload.layerId]) return;
+          const scratch = m.layers[a.layerId].getScratch(a.id);
+          if (!scratch || !m.layers[a.payload.layerId]) return;
 
           s.addRectToRedraw(a.layerId, scratch.rect);
           scratch.change(a.payload);
-          m._layers[a.payload.layerId].add(scratch);
+          m.layers[a.payload.layerId].add(scratch);
           s.addNewScratchToDraw(a.payload.layerId, a.id);
-          m._layers[a.layerId].remove(scratch.id);
+          m.layers[a.layerId].remove(scratch.id);
           break;
         }
         default:

@@ -1,4 +1,5 @@
 import { Drawer } from "./Drawer";
+import { Point } from "./interfaces";
 import { Action } from "./interfaces/Action";
 import { Rect } from "./interfaces/Rect";
 import { Layer } from "./Layer";
@@ -15,15 +16,13 @@ export class Manager {
 
   public activeObserver: Observer | null = null;
 
-  public offsetLeft: number = 0;
-
-  public offsetTop: number = 0;
+  public offset: Point = { x: 0, y: 0 };
 
   public toolPanel: ToolPanel;
 
   public observers: Observer[] = [];
 
-  public _layers: Record<string, Layer> = {};
+  public layers: Record<string, Layer> = {};
 
   private _drawer: Drawer;
 
@@ -69,9 +68,7 @@ export class Manager {
   update(ts: number) {
     window.requestAnimationFrame(this.update);
 
-    if (ts - this._prevTS < 1) {
-      return;
-    }
+    if (ts - this._prevTS < 1) return;
 
     this._prevTS = ts;
 
@@ -86,9 +83,8 @@ export class Manager {
 
     if (!state) return;
 
-    // const start = performance.now();
     for (const [layerId, changes] of state.getChanges()) {
-      const layer = this._layers[layerId];
+      const layer = this.layers[layerId];
       const scratches = layer.scratches;
       const isFull = changes.isFull || changes.resize;
 
@@ -117,9 +113,6 @@ export class Manager {
         return imageData;
       });
     }
-
-    // const end = performance.now();
-    // console.log(end - start, 'ms');
   }
 
   dispatch(action: Action | Action[], internal = true) {
@@ -153,14 +146,14 @@ export class Manager {
 
   createLayer(id?: string, z?: number) {
     const layer = new Layer(id);
-    this._layers[layer.id] = layer;
+    this.layers[layer.id] = layer;
     this._drawer.addLayer(layer.id, z);
     return layer;
   }
 
   setActiveLayer(layerId: string) {
-    if (!this._layers[layerId]) return;
-    this.activeLayer = this._layers[layerId];
+    if (!this.layers[layerId]) return;
+    this.activeLayer = this.layers[layerId];
   }
 
   move(observerId: string, x: number, y: number) {
@@ -178,8 +171,10 @@ export class Manager {
     const width = this._container.clientWidth;
     const height = this._container.clientHeight;
 
-    this.offsetLeft = this._container.offsetLeft;
-    this.offsetTop = this._container.offsetTop;
+    this.offset = {
+      x: this._container.offsetLeft,
+      y: this._container.offsetTop,
+    };
 
     this.rect.right = this.rect.left + width;
     this.rect.bottom = this.rect.top + height;
@@ -214,7 +209,7 @@ export class Manager {
 
     for (const [layerId, changes] of state.getChanges()) {
       for (const scratchId of Object.keys(changes.changed)) {
-        const layer = this._layers[layerId];
+        const layer = this.layers[layerId];
         if (!layer.hasScratchesAbove(scratchId)) {
           state.addNewScratchToDraw(layerId, scratchId);
         } else {

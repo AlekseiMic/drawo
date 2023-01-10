@@ -59,8 +59,8 @@ export class PenTool extends BaseTool implements ITool {
   private addPoint(e: MouseEvent) {
     if (!this.active) return;
 
-    const offsetX = this.manager.rect.left - this.manager.offsetLeft;
-    const offsetY = this.manager.rect.top - this.manager.offsetTop;
+    const offsetX = this.manager.rect.left - this.manager.offset.x;
+    const offsetY = this.manager.rect.top - this.manager.offset.y;
 
     this.manager.dispatch({
       type: "changeScratch",
