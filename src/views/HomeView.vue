@@ -1,17 +1,33 @@
 <script lang="ts">
-import ModuleList from '../components/module-list/ModuleList.vue';
+import AppList from '../components/module-list/AppList.vue';
+
 export default {
-  components: { ModuleList },
+  components: { AppList },
   data: function () {
     return {
-      modules: [{ name: 'test', url: '/board' }],
+      apps: [
+        {
+          name: 'Board',
+          description: 'Draw simple art with your friends',
+          image: 'src/assets/svg/board.svg',
+          multiplayer: true,
+          url: '/board',
+        },
+      ],
     };
   },
 };
 </script>
 
 <template>
-  <ModuleList :modules="modules" />
+  <h2>Choose application</h2>
+  <AppList :apps="apps" />
 </template>
 
-<style></style>
+<style scoped>
+h2 {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 40px;
+}
+</style>

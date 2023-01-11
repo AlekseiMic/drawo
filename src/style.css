@@ -1,6 +1,12 @@
 :root {
-  --c-default-text: rgba(255, 255, 255, 0.87);
+  --c-default-text: rgba(244, 244, 244, 1);
+  --c-default-text-120: rgba(255, 255, 255, 1);
+  --c-default-text-80: rgba(255, 255, 255, 0.7);
+  --c-default-text-60: rgba(255, 255, 255, 0.54);
   --c-default-background: #242424;
+  --c-default-background-120: #202020;
+  --c-default-background-80: #282828;
+  --c-default-background-60: #414141;
   --c-default-shadow: #333333cc;
 
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
@@ -31,7 +37,13 @@ body {
 @media (prefers-color-scheme: light) {
   :root {
     --c-default-text: #213547;
-    --c-default-background: #fff;
+    --c-default-text-120: rgba(0, 0, 0, 1);
+    --c-default-text-80: rgba(0, 0, 0, 0.7);
+    --c-default-text-60: rgba(0, 0, 0, 0.54);
+    --c-default-background: #ddd;
+    --c-default-background-120: #fff;
+    --c-default-background-80: #aaa;
+    --c-default-background-60: #999;
     --c-default-shadow: #333333cc;
   }
 }
