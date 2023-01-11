@@ -7,10 +7,9 @@ export const routes: VueRouter.RouteRecordRaw[] = [
   {
     path: '/',
     component: HomeLayout,
-    children: [{ path: '', component: HomeView }],
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    component: NotFound,
+    children: [
+      { path: '', component: HomeView },
+      { path: '/:pathMatch(.*)*', component: NotFound },
+    ],
   },
 ];

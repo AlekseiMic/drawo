@@ -9,9 +9,20 @@ export default {
 </script>
 
 <template>
-  <HomeHeader />
-  <HomeMain />
-  <HomeFooter />
+  <div class="container">
+    <HomeHeader class="header" />
+    <HomeMain class="main" />
+    <HomeFooter class="footer" />
+  </div>
 </template>
 
-<style></style>
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main {
+  flex-grow: 1;
+}
+</style>
