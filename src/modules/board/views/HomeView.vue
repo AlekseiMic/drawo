@@ -5,6 +5,8 @@ import { useVuelidate } from '@vuelidate/core';
 import { minLength, required, requiredIf } from '@vuelidate/validators';
 import AlphaButton from '@ui/buttons/AlphaButton.vue';
 import BetaCheckbox from '@ui/inputs/BetaCheckbox.vue';
+import { inject } from 'vue';
+import { BoardService } from '../services/BoardService';
 
 export default {
   components: {
@@ -13,7 +15,10 @@ export default {
     AlphaButton,
     BetaCheckbox,
   },
-  setup: () => ({ v$: useVuelidate({}) }),
+  setup: () => {
+    const test = inject('boardService') as BoardService;
+    return { boardService$: test, v$: useVuelidate({}) };
+  },
   data: function () {
     return {
       form: {
@@ -25,13 +30,13 @@ export default {
   },
   methods: {
     handleClose: function () {
-      console.log('close');
       this.$router.push({ path: '/' });
     },
-    handleSubmit() {
-      const isInvalid = this.v$.$invalid;
-      console.log(isInvalid);
-      if (isInvalid) return;
+    async handleSubmit() {
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
+      const result = await this.boardService$.joinRoom('test');
+      console.log(result);
     },
   },
   validations() {
