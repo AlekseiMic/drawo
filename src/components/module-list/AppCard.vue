@@ -34,7 +34,7 @@ export default {
 <style scoped lang="scss">
 article {
   border-radius: 5px;
-  height: calc(100% - 32px);
+  height: 100%;
   padding: 16px;
   min-width: 240px;
   box-shadow: -1px 1px 2px 2px var(--c-default-shadow);
