@@ -5,9 +5,10 @@ import CloseButton from './ui/buttons/CloseButton.vue';
 export default {
   components: { Teleport: Teleport as any, CloseButton },
   props: {
-    title: String,
+    title: { type: String, default: '' },
     isOpen: Boolean,
     small: Boolean,
+    skipOutsideClick: Boolean,
   },
   emits: ['close'],
   data: function data() {
@@ -20,8 +21,8 @@ export default {
   <Teleport v-if="isOpen" to="body">
     <div class="modal-backdrop">
       <div
+        v-click-outside="() => (!skipOutsideClick ? $emit('close') : {})"
         :class="{ modal: true, small }"
-        v-click-outside="() => $emit('close')"
       >
         <slot class="header" name="header">
           <h2>{{ title }}</h2>
@@ -47,7 +48,7 @@ export default {
 }
 .modal {
   border-radius: 10px;
-  min-width: 320px;
+  min-width: 340px;
   min-height: 320px;
   max-width: 100vw;
   max-height: 100vh;

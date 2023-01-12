@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -12,8 +13,19 @@
     "lib": ["ESNext", "DOM"],
     "types": ["vite-svg-loader", "vite/client"],
     "skipLibCheck": true,
-    "noEmit": true
+    "skipDefaultLibCheck": true,
+    "sourceMap": false,
+    "importHelpers": true,
+    "moduleDetection": "force",
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "incremental": true,
+    "allowJs": true,
+    "paths": {
+      "@ui/*": ["src/components/ui/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": ["node_modules"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

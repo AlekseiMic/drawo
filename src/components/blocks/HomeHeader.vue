@@ -2,15 +2,6 @@
 import OmegaLink from '../ui/OmegaLink.vue';
 export default {
   components: { OmegaLink },
-  mounted: () => {
-    console.log('mounted');
-  },
-  unmounted: () => {
-    console.log('unmounted');
-  },
-  updated: () => {
-    console.log('updated');
-  },
 };
 </script>
 

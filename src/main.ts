@@ -5,6 +5,7 @@ import * as VueRouter from 'vue-router';
 import { routes } from './routes/index';
 import { VueModule } from './VueModule';
 import BoardModule from './modules/board';
+import { clickOutside } from './directives/clickOutside';
 
 const router = VueRouter.createRouter({
   history: VueRouter.createWebHistory(),
@@ -18,18 +19,7 @@ function registerModule(module: VueModule) {
 registerModule(BoardModule);
 
 const app = createApp(App);
-app.directive('click-outside', {
-  beforeMount: function (el, binding) {
-    el.clickOutsideListener = (event: MouseEvent) => {
-      if (el !== event.target && !el.contains(event.target)) {
-        binding.value();
-      }
-    };
-    document.addEventListener('click', el.clickOutsideListener);
-  },
-  unmounted: function (el) {
-    document.removeEventListener('click', el.clickOutsideListener);
-  },
-});
+
+app.directive('click-outside', clickOutside);
 app.use(router);
 app.mount('#app');
