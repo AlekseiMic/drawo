@@ -5,6 +5,7 @@ import HomeHeader from '../../components/blocks/HomeHeader.vue';
 import HomeMain from '../../components/blocks/HomeMain.vue';
 import { BoardService } from './services/BoardService';
 import { SocketService } from './services/SocketService';
+import { Storage } from './services/Storage';
 
 export default {
   components: {
@@ -15,7 +16,9 @@ export default {
   setup() {
     const socket = new SocketService('http://localhost:5441');
     const boardService = new BoardService(socket);
+    const storage = new Storage();
     provide('boardService', boardService);
+    provide('storage', storage);
     return { boardService };
   },
 };
