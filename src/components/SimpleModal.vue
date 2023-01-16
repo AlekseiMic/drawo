@@ -25,7 +25,7 @@ export default {
         :class="{ modal: true, small }"
       >
         <slot class="header" name="header">
-          <h2>{{ title }}</h2>
+          <h2>{{ title || 'form' }}</h2>
           <CloseButton
             class="close"
             @click.prevent.left="() => $emit('close')"
@@ -61,7 +61,7 @@ export default {
   box-shadow: -2px 2px 6px 3px var(--c-default-shadow);
 }
 .modal.small {
-  min-height: 150px;
+  min-height: 50px;
   width: 320px;
 }
 h2 {
@@ -70,6 +70,7 @@ h2 {
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 28px;
+  min-height: 2.2rem;
   font-size: 2.2rem;
   line-height: 2.6rem;
   margin-bottom: 16px;

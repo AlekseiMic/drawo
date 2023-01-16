@@ -12,9 +12,7 @@ export const route: VueRouter.RouteRecordRaw = {
       component: HomeView,
     },
     {
-      beforeEnter: (to, from, next) => {
-        console.log(to, from, next);
-      },
+      name: 'boardRoom',
       path: ':id',
       component: BoardView,
     },

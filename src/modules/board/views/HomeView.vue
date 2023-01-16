@@ -1,55 +1,55 @@
 <script lang="ts">
 import SimpleModal from '../../../components/SimpleModal.vue';
-import PsiInput from '@ui/inputs/PsiInput.vue';
-import { useVuelidate } from '@vuelidate/core';
-import { minLength, required, requiredIf } from '@vuelidate/validators';
-import AlphaButton from '@ui/buttons/AlphaButton.vue';
-import BetaCheckbox from '@ui/inputs/BetaCheckbox.vue';
 import { inject } from 'vue';
 import { BoardService } from '../services/BoardService';
+import ConnectForm from '../components/ConnectForm.vue';
+import { Storage } from '../services/Storage';
 
 export default {
   components: {
     SimpleModal,
-    PsiInput,
-    AlphaButton,
-    BetaCheckbox,
+    ConnectForm,
   },
   setup: () => {
-    const test = inject('boardService') as BoardService;
-    return { boardService$: test, v$: useVuelidate({}) };
+    const boardService$ = inject('boardService') as BoardService;
+    const storage$ = inject('storage') as Storage;
+    return { boardService$, storage$ };
   },
   data: function () {
     return {
-      form: {
-        username: 'Vasya',
-        room: '',
-        create: true,
-      },
+      error: '',
     };
   },
   methods: {
-    handleClose: function () {
+    handleClose() {
       this.$router.push({ path: '/' });
     },
-    async handleSubmit() {
-      this.v$.$touch();
-      if (this.v$.$invalid) return;
-      const result = await this.boardService$.joinRoom('test');
-      console.log(result);
+    async joinRoom(username: string, room: string) {
+      const data = { room, username };
+      const result = await this.boardService$.joinRoom(data);
+
+      if (result.status === 'success' && result.userId) {
+        this.storage$.name = username;
+        this.storage$.userId = result.userId;
+        this.$router.push({ path: `/board/${data.room}` });
+      }
     },
-  },
-  validations() {
-    return {
-      form: {
-        username: { required, minLength: minLength(10) },
-        room: {
-          requiredIf: requiredIf(() => !this.form.create),
-          minLength: minLength(10),
-        },
-        create: {},
-      },
-    };
+    async createRoom(username: string) {
+      const result = await this.boardService$.createRoom({
+        username,
+      });
+      this.storage$.name = username;
+      this.storage$.userId = result.userId;
+      this.$router.push({ path: `/board/${result.room}` });
+    },
+    async handleSubmit(data: {
+      create: boolean;
+      username: string;
+      room: string;
+    }) {
+      if (data.create) this.createRoom(data.username);
+      else this.joinRoom(data.username, data.room);
+    },
   },
 };
 </script>
@@ -59,42 +59,9 @@ export default {
     small
     skip-outside-click
     is-open
-    :title="form.create ? 'Create room' : 'Connect to the room'"
+    title="create or connect"
     @close="handleClose"
   >
-    <form @submit.prevent="handleSubmit">
-      <PsiInput
-        id="username"
-        v-model="v$.form.username.$model"
-        label="Username"
-        :error="v$.form.username.$errors[0]?.$message"
-      />
-      <BetaCheckbox
-        id="create"
-        v-model="v$.form.create.$model"
-        label="Create"
-        compact
-        reverse
-      />
-      <PsiInput
-        id="room"
-        v-model="v$.form.room.$model"
-        label="Room"
-        :disabled="form.create"
-        :error="v$.form.room.$errors[0]?.$message"
-      />
-      <AlphaButton class="submit" full type="submit">{{
-        form.create ? 'Create' : 'Connect'
-      }}</AlphaButton>
-    </form>
+    <ConnectForm @submit="handleSubmit" />
   </SimpleModal>
 </template>
-
-<style scoped lang="scss">
-form {
-  padding: 15px 0 30px 0;
-}
-.submit {
-  margin-top: 15px;
-}
-</style>

@@ -1,11 +1,11 @@
 import { createApp } from 'vue';
 import './style.css';
-import App from './App.vue';
 import * as VueRouter from 'vue-router';
 import { routes } from './routes/index';
 import { VueModule } from './VueModule';
 import BoardModule from './modules/board';
 import { clickOutside } from './directives/clickOutside';
+import App from './App.vue';
 
 const router = VueRouter.createRouter({
   history: VueRouter.createWebHistory(),
