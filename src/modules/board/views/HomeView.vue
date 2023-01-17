@@ -18,7 +18,15 @@ export default {
   data: function () {
     return {
       error: '',
+      defaultValues: {
+        username: '',
+        room: '',
+        create: false,
+      },
     };
+  },
+  beforeMount() {
+    this.defaultValues.username = this.storage$.name ?? '';
   },
   methods: {
     handleClose() {
@@ -62,6 +70,6 @@ export default {
     title="create or connect"
     @close="handleClose"
   >
-    <ConnectForm @submit="handleSubmit" />
+    <ConnectForm :default-values="defaultValues" @submit="handleSubmit" />
   </SimpleModal>
 </template>

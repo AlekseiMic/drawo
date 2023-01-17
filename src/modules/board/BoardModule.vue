@@ -25,15 +25,21 @@ export default {
 </script>
 
 <template>
-  <HomeHeader />
-  <HomeMain />
-  <HomeFooter />
+  <HomeHeader class="header" />
+  <HomeMain class="main" />
+  <HomeFooter class="footer" />
 </template>
 
 <style>
-nav {
+#app {
   display: flex;
-  flex-direction: row;
-  column-gap: 10px;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main {
+  flex-grow: 1;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
 }
 </style>

@@ -4,12 +4,22 @@ import AlphaButton from '@ui/buttons/AlphaButton.vue';
 import BetaCheckbox from '@ui/inputs/BetaCheckbox.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { minLength, required, requiredIf } from '@vuelidate/validators';
+import { PropType } from 'vue';
 
 export default {
   components: {
     PsiInput,
     AlphaButton,
     BetaCheckbox,
+  },
+  props: {
+    defaultValues: {
+      type: Object as PropType<{
+        username: string;
+        room: string;
+        create: boolean;
+      }>,
+    },
   },
   emits: ['submit'],
   setup: () => ({ v$: useVuelidate({}) }),
@@ -22,9 +32,12 @@ export default {
       },
     };
   },
+  beforeMount() {
+    if (this.defaultValues) this.form = { ...this.defaultValues };
+  },
   methods: {
     handleSubmit() {
-      if (!this.v$.$validate()) return;
+      if (!this.v$.$validate() || this.v$.$invalid) return;
       this.$emit('submit', this.form);
     },
   },
@@ -48,20 +61,20 @@ export default {
     <PsiInput
       id="username"
       v-model="v$.form.username.$model"
-      label="Username"
+      label="username"
       :error="v$.form.username.$errors[0]?.$message"
     />
     <BetaCheckbox
       id="create"
       v-model="v$.form.create.$model"
-      label="Create"
+      label="create"
       compact
       reverse
     />
     <PsiInput
       id="room"
       v-model="v$.form.room.$model"
-      label="Room"
+      label="room"
       :disabled="form.create"
       :error="v$.form.room.$errors[0]?.$message"
     />

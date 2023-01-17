@@ -41,14 +41,14 @@ export class LineTool extends BaseTool implements ITool {
         start: this.start,
         end: this.end,
         state: ScratchState.preview,
-        color: this.manager.toolPanel.color,
-        thickness: this.manager.toolPanel.thickness,
+        color: this.manager.toolPanel!.color,
+        thickness: this.manager.toolPanel!.thickness,
       },
     });
   }
 
   private mouseupListener() {
-    const layer = this.manager.activeLayer;
+    const layer = this.manager.layers!.active;
     if (!layer || !this.active) return;
     this.active = false;
 

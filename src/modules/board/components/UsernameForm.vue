@@ -18,7 +18,7 @@ export default {
   },
   methods: {
     handleSubmit() {
-      if (!this.v$.$validate()) return;
+      if (!this.v$.$validate() || this.v$.$invalid) return;
       this.$emit('submit', this.username);
     },
   },

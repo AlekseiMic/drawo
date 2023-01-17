@@ -32,8 +32,8 @@ export class PenTool extends BaseTool implements ITool {
       payload: {
         tool: this.constructor.name,
         state: ScratchState.preview,
-        color: this.manager.toolPanel.color,
-        thickness: this.manager.toolPanel.thickness,
+        color: this.manager.toolPanel!.color,
+        thickness: this.manager.toolPanel!.thickness,
       },
     });
 
@@ -41,7 +41,7 @@ export class PenTool extends BaseTool implements ITool {
   }
 
   private finishScratch() {
-    const layer = this.manager.activeLayer;
+    const layer = this.manager.layers!.active;
     if (!this.active || !layer) return;
     this.active = false;
 
