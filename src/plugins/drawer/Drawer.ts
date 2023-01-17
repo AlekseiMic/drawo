@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { IScratch, ScratchState } from "./interfaces/IScratch";
 import { Canvas } from "./Canvas";
 import { DrawService } from "./DrawService";

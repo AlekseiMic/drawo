@@ -1,74 +1,86 @@
-import { Drawer } from "./Drawer";
-import { Point } from "./interfaces";
-import { Action } from "./interfaces/Action";
-import { Rect } from "./interfaces/Rect";
-import { Layer } from "./Layer";
-import { Observer } from "./Observer";
-import { RedrawState } from "./RedrawState";
-import { ToolPanel } from "./ToolPanel";
+/* eslint-disable no-unused-vars */
+import { Drawer } from './Drawer';
+import { Point } from './interfaces';
+import { Action } from './interfaces/Action';
+import { Rect } from './interfaces/Rect';
+import { Layer } from './Layer';
+import { LayerPanel } from './LayerPanel';
+import { Observer } from './Observer';
+import { ObserverPanel } from './ObserverPanel';
+import { RedrawState } from './RedrawState';
+import { ToolPanel } from './ToolPanel';
+
+type Actions = {
+  history: Action[];
+  pending: Action[];
+};
 
 export class Manager {
   public rect: Rect = { left: 0, top: 0, right: 0, bottom: 0 };
 
-  public user: string;
-
-  public activeLayer: Layer | null = null;
-
-  public activeObserver: Observer | null = null;
-
   public offset: Point = { x: 0, y: 0 };
 
-  public toolPanel: ToolPanel;
+  public observers = new ObserverPanel();
 
-  public observers: Observer[] = [];
+  public toolPanel = new ToolPanel(this);
 
-  public layers: Record<string, Layer> = {};
+  public layers = new LayerPanel();
 
-  private _drawer: Drawer;
+  private _drawer?: Drawer;
 
   private _prevTS: number = 0;
 
-  private _actions: {
-    internal: {
-      history: Action[];
-      pending: Action[];
-    };
-    external: {
-      history: Action[];
-      pending: Action[];
-    };
-  } = {
+  private _actions: Record<'internal' | 'external', Actions> = {
     internal: { history: [], pending: [] },
     external: { history: [], pending: [] },
   };
 
   private _reducers: ((m: Manager, s: RedrawState, a: Action) => void)[] = [];
 
-  addReducer(reducer: (m: Manager, s: RedrawState, a: Action) => void) {
-    this._reducers.push(reducer);
-  }
+  private _container?: HTMLDivElement;
 
-  constructor(user: string, private _container: HTMLDivElement) {
-    this.user = user;
-
-    this.activeObserver = this.createObserver(user);
-    this._drawer = new Drawer(this._container);
-    this.toolPanel = new ToolPanel(this);
-
+  constructor(public user: string) {
     this.update = this.update.bind(this);
     this.onResize = this.onResize.bind(this);
+  }
 
+  init() {
+    if (!this._container) return;
+    this._drawer = new Drawer(this._container);
     this.onResize();
     this._drawer.updateRect(this.rect);
+    this.createLayer('preview', 100000);
+    const main = this.createLayer('main');
+    this.layers.setActive(main.id);
+  }
 
-    this.createLayer("preview", 100000);
-    this.setActiveLayer(this.createLayer(undefined).id);
+  start() {
+    this.listenResize();
+    window.requestAnimationFrame(this.update);
+  }
+
+  end() {
+    this.unlistenResize();
+  }
+
+  setContainer(container: HTMLDivElement) {
+    this._container = container;
+  }
+
+  setObserver(observer: Observer) {
+    const shouldResize = this.observers.active !== observer;
+    this.observers.active = observer;
+    if (shouldResize) this.onResize();
+  }
+
+  addReducer(reducer: (m: Manager, s: RedrawState, a: Action) => void) {
+    this._reducers.push(reducer);
   }
 
   update(ts: number) {
     window.requestAnimationFrame(this.update);
 
-    if (ts - this._prevTS < 1) return;
+    if (ts - this._prevTS < 10) return;
 
     this._prevTS = ts;
 
@@ -81,21 +93,31 @@ export class Manager {
 
     const state = this.getRedrawState([...internal, ...external]);
 
-    if (!state) return;
+    const resized = this._drawer?.updateRect(this.rect);
+    if (!(state || resized)) return;
 
-    for (const [layerId, changes] of state.getChanges()) {
-      const layer = this.layers[layerId];
+    const diff = resized
+      ? Object.entries(this.layers?.layers ?? {}).map((l) => {
+          return [
+            l[0],
+            { resize: true, isFull: true, redraw: [], changed: {}, add: [] },
+          ] as const;
+        })
+      : state!.getChanges();
+
+    for (const [layerId, changes] of diff) {
+      const layer = this.layers!.layers[layerId];
       const scratches = layer.scratches;
       const isFull = changes.isFull || changes.resize;
 
-      this._drawer.draw(layerId, isFull, (drawer, imageData) => {
+      this._drawer!.draw(layerId, isFull, (drawer, imageData) => {
         const rects = isFull ? [drawer.rect] : changes.redraw;
         if (changes.resize) drawer.resize(layerId);
 
         // somehow rects should collapse if they on each other so we dont go through same scratches twice
         // mb check percentage of one rect taking place in another rect
         for (const rect of rects) {
-          drawer.clear(imageData, rect);
+          if (!changes.resize) drawer.clear(imageData, rect);
 
           for (const scratch of scratches) {
             if (!scratch.isIntersectsRect(rect)) continue;
@@ -129,45 +151,26 @@ export class Manager {
     arr.pending.push(...actions);
   }
 
-  start() {
-    this.listenResize();
-    window.requestAnimationFrame(this.update);
-  }
-
-  end() {
-    this.unlistenResize();
-  }
-
-  createObserver(user: string) {
-    const observer = new Observer(user);
-    this.observers.push(observer);
-    return observer;
-  }
-
   createLayer(id?: string, z?: number) {
     const layer = new Layer(id);
-    this.layers[layer.id] = layer;
-    this._drawer.addLayer(layer.id, z);
+    this.layers!.layers[layer.id] = layer;
+    this._drawer!.addLayer(layer.id, z);
     return layer;
   }
 
-  setActiveLayer(layerId: string) {
-    if (!this.layers[layerId]) return;
-    this.activeLayer = this.layers[layerId];
-  }
-
   move(observerId: string, x: number, y: number) {
-    const observer = this.observers.find((o) => o.id === observerId);
+    const observer = this.observers.observers.find((o) => o.id === observerId);
     if (!observer) return;
     observer.move(x, y);
-    if (this.activeObserver === observer) this.onResize();
+    if (this.observers.active === observer) this.onResize();
   }
 
   updateDrawerRect() {
-    return this._drawer.updateRect(this.rect);
+    return this._drawer!.updateRect(this.rect);
   }
 
   private onResize() {
+    if (!this._container) return;
     const width = this._container.clientWidth;
     const height = this._container.clientHeight;
 
@@ -179,8 +182,8 @@ export class Manager {
     this.rect.right = this.rect.left + width;
     this.rect.bottom = this.rect.top + height;
 
-    if (this.activeObserver) {
-      const center = this.activeObserver.center;
+    if (this.observers.active) {
+      const center = this.observers.active.center;
       this.rect.left = center.x - Math.floor(width / 2);
       this.rect.right = this.rect.left + width;
       this.rect.top = center.y - Math.floor(height / 2);
@@ -189,11 +192,11 @@ export class Manager {
   }
 
   private listenResize() {
-    window.addEventListener("resize", this.onResize);
+    window.addEventListener('resize', this.onResize);
   }
 
   private unlistenResize() {
-    window.removeEventListener("resize", this.onResize);
+    window.removeEventListener('resize', this.onResize);
   }
 
   private getRedrawState(actions: Action[]) {
@@ -209,7 +212,7 @@ export class Manager {
 
     for (const [layerId, changes] of state.getChanges()) {
       for (const scratchId of Object.keys(changes.changed)) {
-        const layer = this.layers[layerId];
+        const layer = this.layers!.layers[layerId];
         if (!layer.hasScratchesAbove(scratchId)) {
           state.addNewScratchToDraw(layerId, scratchId);
         } else {

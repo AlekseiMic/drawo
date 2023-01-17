@@ -1,15 +1,15 @@
-import { Action } from "./interfaces/Action";
-import { Manager } from "./Manager";
-import { RedrawState } from "./RedrawState";
+import { Action } from './interfaces/Action';
+import { Manager } from './Manager';
+import { RedrawState } from './RedrawState';
 
-export default (m: Manager, s: RedrawState, a: Action) => {
+export const observerReducer = (m: Manager, s: RedrawState, a: Action) => {
   switch (a.type) {
-    case "moveObserver": {
+    case 'moveObserver': {
       if (!a.id) return;
       m.move(a.id, a.payload.x, a.payload.y);
       const shouldResize = m.updateDrawerRect();
       if (shouldResize) {
-        Object.keys(m.layers).forEach((l) => {
+        Object.keys(m.layers!.layers).forEach((l) => {
           s.makeFullRedraw(l);
         });
       }
@@ -19,4 +19,3 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       break;
   }
 };
-

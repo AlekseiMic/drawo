@@ -1,9 +1,9 @@
-import { IScratch, ScratchState } from "../interfaces/IScratch";
-import { ITool } from "../interfaces/ITool";
-import { Point } from "../interfaces/Point";
-import { Manager } from "../Manager";
-import { throttle } from "../utils/throttle";
-import { BaseTool } from "./BaseTool";
+import { IScratch, ScratchState } from '../interfaces/IScratch';
+import { ITool } from '../interfaces/ITool';
+import { Point } from '../interfaces/Point';
+import { Manager } from '../Manager';
+import { throttle } from '../utils/throttle';
+import { BaseTool } from './BaseTool';
 
 export class MoveTool extends BaseTool implements ITool {
   private hovered: IScratch | null = null;
@@ -21,15 +21,20 @@ export class MoveTool extends BaseTool implements ITool {
     this.mouseUp = this.mouseUp.bind(this);
   }
 
+  disable(): void {
+    document.body.style.cursor = 'default';
+    super.disable();
+  }
+
   private hover(s: IScratch) {
-    document.body.style.cursor = "grab";
+    document.body.style.cursor = 'grab';
     this.hovered = s;
     this.manager.dispatch({
-      type: "moveScratch",
-      layerId: this.manager.activeLayer!.id,
+      type: 'moveScratch',
+      layerId: this.manager.layers!.active?.id,
       id: s.id,
       payload: {
-        layerId: "preview",
+        layerId: 'preview',
         state: ScratchState.hovered,
       },
     });
@@ -38,14 +43,14 @@ export class MoveTool extends BaseTool implements ITool {
   private unhover() {
     if (!this.hovered) return;
     const s = this.hovered;
-    document.body.style.cursor = "default";
+    document.body.style.cursor = 'default';
     this.hovered = null;
     this.manager.dispatch({
-      type: "moveScratch",
-      layerId: "preview",
+      type: 'moveScratch',
+      layerId: 'preview',
       id: s.id,
       payload: {
-        layerId: this.manager.activeLayer!.id,
+        layerId: this.manager.layers!.active?.id,
         state: ScratchState.active,
       },
     });
@@ -54,8 +59,8 @@ export class MoveTool extends BaseTool implements ITool {
   private drag(s: IScratch) {
     this.dragged = s;
     this.manager.dispatch({
-      type: "changeScratch",
-      layerId: "preview",
+      type: 'changeScratch',
+      layerId: 'preview',
       id: s.id,
       payload: {
         state: ScratchState.dragged,
@@ -68,8 +73,8 @@ export class MoveTool extends BaseTool implements ITool {
     const s = this.dragged;
     this.dragged = null;
     this.manager.dispatch({
-      type: "changeScratch",
-      layerId: "preview",
+      type: 'changeScratch',
+      layerId: 'preview',
       id: s.id,
       payload: {
         state: ScratchState.hovered,
@@ -87,19 +92,19 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private mouseDown(event: MouseEvent) {
-    document.body.style.cursor = "grabbing";
+    document.body.style.cursor = 'grabbing';
     this.start = { x: event.x, y: event.y };
     if (!this.hovered) {
       this.canvasDrag = true;
       return;
     }
-    const layer = this.manager.activeLayer;
+    const layer = this.manager.layers!.active;
     if (!layer) return;
     this.drag(this.hovered);
   }
 
   private mouseUp(event: MouseEvent) {
-    document.body.style.cursor = "grab";
+    document.body.style.cursor = 'grab';
     if (!this.dragged) {
       this.canvasDrag = false;
       return;
@@ -115,8 +120,8 @@ export class MoveTool extends BaseTool implements ITool {
 
   private dragMove(event: MouseEvent) {
     this.manager.dispatch({
-      type: "translateScratch",
-      layerId: "preview",
+      type: 'translateScratch',
+      layerId: 'preview',
       id: this.dragged!.id,
       payload: {
         move: {
@@ -129,10 +134,10 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private dragCanvas(event: MouseEvent) {
-    const observer = this.manager.activeObserver;
+    const observer = this.manager.observers.active;
     if (!observer) return;
     this.manager.dispatch({
-      type: "moveObserver",
+      type: 'moveObserver',
       id: observer.id,
       payload: {
         x: event.x - this.start.x,
@@ -143,7 +148,7 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private mouseMove(event: MouseEvent) {
-    if (!this.manager.activeLayer) return;
+    if (!this.manager.layers!.active) return;
     if (this.dragged) return this.dragMove(event);
     if (this.canvasDrag) return this.dragCanvas(event);
 
@@ -155,7 +160,7 @@ export class MoveTool extends BaseTool implements ITool {
     if (this.hovered && this.isHovers(this.hovered, p)) return;
     if (this.hovered) this.unhover();
 
-    for (const s of this.manager.activeLayer.scratches) {
+    for (const s of this.manager.layers!.active.scratches) {
       if (!this.isHovers(s, p)) continue;
       this.hover(s);
       break;
@@ -163,14 +168,14 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   protected applyListeners(): void {
-    window.addEventListener("mousemove", this.mouseMove);
-    window.addEventListener("mousedown", this.mouseDown);
-    window.addEventListener("mouseup", this.mouseUp);
+    window.addEventListener('mousemove', this.mouseMove);
+    window.addEventListener('mousedown', this.mouseDown);
+    window.addEventListener('mouseup', this.mouseUp);
   }
 
   protected disableListeners(): void {
-    window.removeEventListener("mousemove", this.mouseMove);
-    window.removeEventListener("mousedown", this.mouseDown);
-    window.removeEventListener("mouseup", this.mouseUp);
+    window.removeEventListener('mousemove', this.mouseMove);
+    window.removeEventListener('mousedown', this.mouseDown);
+    window.removeEventListener('mouseup', this.mouseUp);
   }
 }
