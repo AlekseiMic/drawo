@@ -7,8 +7,8 @@ export default {
     return {
       apps: [
         {
-          name: 'Board',
-          description: 'Draw simple art with your friends',
+          name: 'board',
+          description: 'draw simple art with your friends',
           image: 'src/assets/svg/board.svg',
           multiplayer: true,
           url: '/board',
@@ -20,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <h2>Choose application</h2>
+  <h2>choose application</h2>
   <AppList :apps="apps" />
 </template>
 

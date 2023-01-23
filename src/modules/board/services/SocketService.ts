@@ -9,9 +9,6 @@ export class SocketService {
 
   on(event: string, cb: (data: unknown) => void) {
     this.connection.on(event, cb);
-    console.log('subscribed');
-    console.log(event);
-    console.log(this.connection.hasListeners(event));
   }
 
   connect() {

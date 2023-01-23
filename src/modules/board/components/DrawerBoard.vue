@@ -1,11 +1,15 @@
 <script lang="ts">
-import { Observer } from 'src/plugins/drawer/Observer';
 import { inject, reactive, ref } from 'vue';
+import LineIcon from '../../../assets/svg/line.svg?component';
+import MoveIcon from '../../../assets/svg/move.svg?component';
+import PenIcon from '../../../assets/svg/pen.svg?component';
+import GearIcon from '../../../assets/svg/gear.svg?component';
 import {
   Manager,
   LineTool,
   ToolPanel,
   LayerPanel,
+  Observer,
   MoveTool,
   observerReducer,
   ObserverPanel,
@@ -14,7 +18,14 @@ import {
 import { BoardService } from '../services/BoardService';
 import { Storage } from '../services/Storage';
 
+const toolIcons = {
+  LineTool: 'LineIcon',
+  MoveTool: 'MoveIcon',
+  PenTool: 'PenIcon',
+};
+
 export default {
+  components: { Gear: GearIcon, LineIcon, MoveIcon, PenIcon },
   props: {
     room: {
       type: String,
@@ -26,6 +37,8 @@ export default {
     const storage$ = inject('storage') as Storage;
     const username = ref(storage$.name);
     const userId = ref(storage$.userId);
+    const users = { [userId.value]: username.value };
+
     const drawer = new Manager(userId.value);
     const toolPanel = reactive(new ToolPanel(drawer)) as ToolPanel;
     const layerPanel = reactive(new LayerPanel()) as LayerPanel;
@@ -35,8 +48,7 @@ export default {
     toolPanel.addTool(MoveTool);
     toolPanel.addTool(PenTool);
 
-    const currentObserver = observerPanel.create('test');
-    observerPanel.create('test2');
+    const currentObserver = observerPanel.create(userId.value);
     observerPanel.active = currentObserver;
 
     drawer.addReducer(toolPanel.gerReducer());
@@ -54,10 +66,12 @@ export default {
       boardService$,
       username,
       userId,
+      users,
     };
   },
   data() {
     return {
+      toolIcons,
       intervalHandle: null as null | ReturnType<typeof setInterval>,
     };
   },
@@ -91,7 +105,7 @@ export default {
           user: this.drawer.user,
         };
         this.boardService$.sendData(this.room, data);
-      }, 100);
+      }, 10);
     },
     stop() {
       this.drawer.stop();
@@ -109,26 +123,37 @@ export default {
 
 <template>
   <div id="board-container" ref="boardContainer"></div>
+  <div class="right-panel">wow</div>
   <div class="toolPanel">
     <button
       v-for="tool in toolPanel.tools"
       :key="tool"
-      :class="{ active: toolPanel.active === tool }"
+      :class="{ icon: true, tool: true, active: toolPanel.active === tool }"
       @click="setTool(tool)"
     >
-      {{ tool }}
+      <component :is="(toolIcons as any)[tool]" />
     </button>
   </div>
-  <div class="observerPanel">
-    <button
-      v-for="observer in observerPanel.observers"
-      :key="observer.id"
-      :class="{ active: observerPanel.active === observer }"
-      @click="setObserver(observer)"
-    >
-      {{ observer.id }}
-    </button>
-  </div>
+  <Teleport to="#header-anchor">
+    <div class="observerPanel">
+      <button
+        v-for="observer in observerPanel.observers"
+        :key="observer.id"
+        :title="users[observer.id]"
+        :class="{
+          icon: true,
+          observer: true,
+          active: observerPanel.active === observer,
+        }"
+        @click="setObserver(observer)"
+      >
+        <span>
+          {{ users[observer.id] }}
+        </span>
+      </button>
+    </div>
+    <button class="icon settings-btn"><Gear /></button>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -136,40 +161,67 @@ export default {
   position: relative;
   width: 100%;
 }
+.right-panel {
+  padding: 10px;
+  background: #222;
+  width: 240px;
+  box-shadow: -3px 0px 5px 0px var(--c-default-shadow);
+}
+.icon {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .toolPanel {
   cursor: default;
   z-index: 100000;
-  background: green;
-  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 40px;
+  padding: 4px;
   position: fixed;
   bottom: 0;
   left: 50%;
   transform: translate(-50%, 0);
-
-  button {
-    cursor: pointer;
-    padding: 5px 10px;
+  display: flex;
+  column-gap: 5px;
+}
+.tool {
+  svg {
+    font-size: 2.2rem;
+    max-width: 30px;
+    max-height: 30px;
   }
-  button.active {
+  &.active {
     background: red;
   }
 }
 .observerPanel {
-  cursor: default;
-  z-index: 100000;
-  background: green;
-  padding: 10px;
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, 0);
+  height: 100%;
+  margin-right: 20px;
 
-  button {
+  .observer {
     cursor: pointer;
-    padding: 5px 10px;
+    &:hover {
+      opacity: 0.8;
+    }
+    & span {
+      display: block;
+      max-width: 2ch;
+      overflow: hidden;
+    }
+    &.active {
+      box-shadow: inset 0 0 4px 2px cyan;
+      background: red;
+    }
   }
-  button.active {
-    background: red;
+}
+.settings-btn {
+  svg {
+    font-size: 3rem;
   }
 }
 </style>

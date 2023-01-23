@@ -25,13 +25,15 @@ export default {
 </script>
 
 <template>
-  <HomeHeader class="header" />
-  <HomeMain class="main" />
-  <HomeFooter class="footer" />
+  <div class="container">
+    <HomeHeader class="header" />
+    <HomeMain class="main" />
+    <HomeFooter class="footer" />
+  </div>
 </template>
 
-<style>
-#app {
+<style scoped>
+.container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
