@@ -40,6 +40,10 @@ body {
   min-height: 100vh;
 }
 
+#app {
+  min-height: 100vh;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     --c-default-text: #213547;

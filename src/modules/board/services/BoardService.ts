@@ -23,9 +23,7 @@ export class BoardService {
     room: string | undefined,
     data: { actions: Action[]; user: string }
   ) {
-    this.socket.send('sendData', { room, data }, (r) => {
-      console.log(r);
-    });
+    this.socket.send('sendData', { room, data }, (r) => {});
   }
 
   subscribe(cb: (data: any) => void) {

@@ -6,7 +6,7 @@ export default {};
   <main><router-view></router-view></main>
 </template>
 
-<style>
+<style scoped>
 main {
   padding: 2rem;
 }
