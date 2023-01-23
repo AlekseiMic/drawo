@@ -104,7 +104,7 @@ export default {
     </SimpleModal>
   </div>
   <div v-if="roomExist && !isConnected" class="backdrop"></div>
-  <DrawerBoard v-if="connectedOnce" />
+  <DrawerBoard v-if="connectedOnce" :room="room" />
 </template>
 
 <style scoped>

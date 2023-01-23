@@ -30,6 +30,8 @@ export class Manager {
 
   private _prevTS: number = 0;
 
+  private _stopped = false;
+
   private _actions: Record<'internal' | 'external', Actions> = {
     internal: { history: [], pending: [] },
     external: { history: [], pending: [] },
@@ -54,9 +56,22 @@ export class Manager {
     this.layers.setActive(main.id);
   }
 
+  getActionHistory() {
+    return this._actions.internal.history;
+  }
+
+  clearActionHistory() {
+    this._actions.internal.history = [];
+  }
+
   start() {
     this.listenResize();
     window.requestAnimationFrame(this.update);
+  }
+
+  stop() {
+    this.unlistenResize();
+    this._stopped = true;
   }
 
   end() {
@@ -78,6 +93,8 @@ export class Manager {
   }
 
   update(ts: number) {
+    if (this._stopped) return;
+
     window.requestAnimationFrame(this.update);
 
     if (ts - this._prevTS < 10) return;
