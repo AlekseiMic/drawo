@@ -1,3 +1,4 @@
+import { Action } from 'src/plugins/drawer';
 import { SocketService } from './SocketService';
 
 type JoinResponse = { status: 'success' | 'failure'; userId?: string };
@@ -16,6 +17,19 @@ export class BoardService {
 
   disconnect() {
     this.socket.disconnect();
+  }
+
+  sendData(
+    room: string | undefined,
+    data: { actions: Action[]; user: string }
+  ) {
+    this.socket.send('sendData', { room, data }, (r) => {
+      console.log(r);
+    });
+  }
+
+  subscribe(cb: (data: any) => void) {
+    this.socket.on('sendData', cb);
   }
 
   roomExist(room: string) {

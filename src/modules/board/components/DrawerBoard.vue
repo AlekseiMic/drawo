@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Observer } from 'src/plugins/drawer/Observer';
-import { reactive } from 'vue';
+import { inject, reactive, ref } from 'vue';
 import {
   Manager,
   LineTool,
@@ -11,10 +11,22 @@ import {
   ObserverPanel,
   PenTool,
 } from '../../../plugins/drawer/';
+import { BoardService } from '../services/BoardService';
+import { Storage } from '../services/Storage';
 
 export default {
+  props: {
+    room: {
+      type: String,
+      required: true,
+    },
+  },
   setup() {
-    const drawer = new Manager('test');
+    const boardService$ = inject('boardService') as BoardService;
+    const storage$ = inject('storage') as Storage;
+    const username = ref(storage$.name);
+    const userId = ref(storage$.userId);
+    const drawer = new Manager(userId.value);
     const toolPanel = reactive(new ToolPanel(drawer)) as ToolPanel;
     const layerPanel = reactive(new LayerPanel()) as LayerPanel;
     const observerPanel = reactive(new ObserverPanel()) as ObserverPanel;
@@ -34,7 +46,20 @@ export default {
     drawer.layers = layerPanel;
     drawer.observers = observerPanel;
 
-    return { drawer, toolPanel, layerPanel, observerPanel };
+    return {
+      drawer,
+      toolPanel,
+      layerPanel,
+      observerPanel,
+      boardService$,
+      username,
+      userId,
+    };
+  },
+  data() {
+    return {
+      intervalHandle: null as null | ReturnType<typeof setInterval>,
+    };
   },
   mounted() {
     if (
@@ -44,10 +69,34 @@ export default {
     ) {
       this.drawer.setContainer(this.$refs.boardContainer as HTMLDivElement);
       this.drawer.init();
-      this.drawer.start();
+      this.start();
     }
   },
+  beforeUnmount() {
+    this.stop();
+  },
   methods: {
+    start() {
+      this.drawer.start();
+      this.boardService$.joinRoom({ room: this.room, username: this.username });
+      this.boardService$.subscribe((data) => {
+        this.drawer.dispatch(data.actions, false);
+      });
+      this.intervalHandle = setInterval(() => {
+        const actions = this.drawer.getActionHistory();
+        if (actions.length === 0) return;
+        this.drawer.clearActionHistory();
+        const data = {
+          actions,
+          user: this.drawer.user,
+        };
+        this.boardService$.sendData(this.room, data);
+      }, 100);
+    },
+    stop() {
+      this.drawer.stop();
+      if (this.intervalHandle) clearInterval(this.intervalHandle);
+    },
     setTool(tool: string) {
       this.drawer.toolPanel.setActive(tool);
     },

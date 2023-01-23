@@ -7,6 +7,13 @@ export class SocketService {
     this.connection = io(url);
   }
 
+  on(event: string, cb: (data: unknown) => void) {
+    this.connection.on(event, cb);
+    console.log('subscribed');
+    console.log(event);
+    console.log(this.connection.hasListeners(event));
+  }
+
   connect() {
     if (this.connection.connected) return;
     this.connection.connect();

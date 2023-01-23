@@ -14,6 +14,11 @@ export default {
   },
   props: {
     defaultValues: {
+      default: () => ({
+        username: '',
+        room: '',
+        create: true,
+      }),
       type: Object as PropType<{
         username: string;
         room: string;

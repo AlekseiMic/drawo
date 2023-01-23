@@ -27,6 +27,7 @@ io.on('connection', (socket) => {
         user = { id: userId ?? nanoid(15), username };
         rooms[room].users.push(user);
       }
+      socket.join(room);
       callback({ status: 'success', userId: user.id });
     }
   );
@@ -49,6 +50,17 @@ io.on('connection', (socket) => {
   socket.on('exist', (room: string, callback) => {
     callback(room in rooms);
   });
+
+  socket.on(
+    'sendData',
+    (
+      { room, data }: { room: string; data: { actions: any[]; user: string } },
+      callback
+    ) => {
+      socket.to(room).emit('sendData', data);
+      callback(true);
+    }
+  );
 });
 
 io.listen(5441);
