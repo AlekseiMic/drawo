@@ -11,6 +11,10 @@ export class SocketService {
     this.connection.on(event, cb);
   }
 
+  off(event: string, cb: (data: unknown) => void) {
+    this.connection.off(event, cb);
+  }
+
   connect() {
     if (this.connection.connected) return;
     this.connection.connect();

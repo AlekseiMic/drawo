@@ -22,7 +22,8 @@
     "incremental": true,
     "allowJs": true,
     "paths": {
-      "@ui/*": ["src/components/ui/*"]
+      "@ui/*": ["src/components/ui/*"],
+      "@assets/*": ["src/assets/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
