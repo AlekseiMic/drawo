@@ -6,8 +6,6 @@ import { Manager } from './Manager';
 import { RedrawState } from './RedrawState';
 
 export class ToolPanel {
-  public color: Color = { r: 33, g: 33, b: 100, a: 200 };
-
   public thickness: number = 3;
 
   public active?: string;
@@ -15,6 +13,26 @@ export class ToolPanel {
   private _activeTool: ITool | null = null;
 
   private _tools: Record<string, ITool> = {};
+
+  public color: Color = { r: 255, g: 255, b: 255, a: 255 };
+
+  private _colorHex: string = '#ffffffff';
+
+  set colorHex(color: string) {
+    this._colorHex = color;
+
+    const num = Number('0x' + color.slice(1, 9));
+    this.color = {
+      r: (num >> 24) & 255,
+      g: (num >> 16) & 255,
+      b: (num >> 8) & 255,
+      a: num & 255,
+    };
+  }
+
+  get colorHex() {
+    return this._colorHex;
+  }
 
   gerReducer() {
     return (m: Manager, s: RedrawState, a: Action) => {

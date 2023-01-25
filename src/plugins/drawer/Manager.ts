@@ -51,8 +51,11 @@ export class Manager {
     this._drawer = new Drawer(this._container);
     this.onResize();
     this._drawer.updateRect(this.rect);
-    this.createLayer('preview', 100000);
-    const main = this.createLayer('main');
+    this.createLayer(100000, 'preview');
+    const main = this.createLayer(
+      Object.keys(this.layers.layers).length,
+      'main'
+    );
     this.layers.setActive(main.id);
   }
 
@@ -168,8 +171,8 @@ export class Manager {
     arr.pending.push(...actions);
   }
 
-  createLayer(id?: string, z?: number) {
-    const layer = new Layer(id);
+  createLayer(z: number, id?: string) {
+    const layer = new Layer(z, id);
     this.layers!.layers[layer.id] = layer;
     this._drawer!.addLayer(layer.id, z);
     return layer;

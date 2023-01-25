@@ -1,10 +1,12 @@
-import { nanoid } from "nanoid";
-import { IScratch } from "./interfaces/IScratch";
+import { nanoid } from 'nanoid';
+import { IScratch } from './interfaces/IScratch';
 
 export type LayerOptions = Partial<{}>;
 
 export class Layer {
   public id: string;
+
+  public zIndex: number;
 
   private _scratches: Record<string, { order: number; scratch: IScratch }> = {};
 
@@ -21,8 +23,9 @@ export class Layer {
     return this._sorted;
   }
 
-  constructor(id?: string) {
+  constructor(z: number, id?: string) {
     this.id = id ?? nanoid();
+    this.zIndex = z;
   }
 
   hasScratchesAbove(id: string) {

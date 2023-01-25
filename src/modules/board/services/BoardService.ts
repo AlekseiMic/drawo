@@ -23,11 +23,15 @@ export class BoardService {
     room: string | undefined,
     data: { actions: Action[]; user: string }
   ) {
-    this.socket.send('sendData', { room, data }, (r) => {});
+    this.socket.send('sendData', { room, data }, () => {});
   }
 
   subscribe(cb: (data: any) => void) {
     this.socket.on('sendData', cb);
+  }
+
+  unsubscribe(cb: (data: any) => void) {
+    this.socket.off('sendData', cb);
   }
 
   roomExist(room: string) {
