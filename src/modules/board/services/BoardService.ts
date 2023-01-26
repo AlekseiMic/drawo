@@ -26,12 +26,20 @@ export class BoardService {
     this.socket.send('sendData', { room, data }, () => {});
   }
 
+  subscribeToUsersChanges(cb: (data: any) => void) {
+    this.socket.on('user-changes', cb);
+  }
+
   subscribe(cb: (data: any) => void) {
     this.socket.on('sendData', cb);
   }
 
   unsubscribe(cb: (data: any) => void) {
     this.socket.off('sendData', cb);
+  }
+
+  unsubscribeToUsersChanges(cb: (data: any) => void) {
+    this.socket.off('user-changes', cb);
   }
 
   roomExist(room: string) {

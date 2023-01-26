@@ -26,6 +26,8 @@ io.on('connection', (socket) => {
       if (!user) {
         user = { id: userId ?? nanoid(15), username };
         rooms[room].users.push(user);
+        socket.to(room).emit('user-changes', { action: 'join', user });
+        console.log(user);
       }
       socket.join(room);
       callback({ status: 'success', userId: user.id });

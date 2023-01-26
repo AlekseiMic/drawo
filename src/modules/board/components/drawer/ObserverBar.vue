@@ -43,6 +43,10 @@ export default {
 </template>
 
 <style scoped lang="scss">
+.observerPanel {
+  display: flex;
+  column-gap: 10px;
+}
 .observer {
   cursor: pointer;
   &:hover {
