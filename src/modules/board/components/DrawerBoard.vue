@@ -90,6 +90,23 @@ export default {
     },
     subscribeToChanges() {
       this.boardService$.subscribe(this.updatedHandler);
+      this.boardService$.subscribeToUsersChanges(this.updateUsersHandler);
+    },
+    updateUsersHandler({
+      user,
+      action,
+    }: {
+      user: { username: string; id: string };
+      action: string;
+    }) {
+      if (action === 'join' && !this.users[user.id]) {
+        this.users[user.id] = user.username;
+        this.observerPanel.create(user.id);
+        console.log('one');
+      }
+      if (action === 'left') {
+        delete this.users[user.id];
+      }
     },
     startChangesStream() {
       this.intervalHandle = setInterval(() => {
@@ -110,6 +127,7 @@ export default {
     },
     unsubscribeFromChanges() {
       this.boardService$.unsubscribe(this.updatedHandler);
+      this.boardService$.unsubscribeToUsersChanges(this.updateUsersHandler);
     },
     setTool(tool: string) {
       this.drawer.toolPanel.setActive(tool);
@@ -122,7 +140,7 @@ export default {
     },
     changeColor(color: string) {
       this.drawer.toolPanel.colorHex = color;
-    }
+    },
   },
 };
 </script>
