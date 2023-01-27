@@ -13,7 +13,7 @@ const io = new Server({
 io.on('connection', (socket) => {
   socket.on(
     'join',
-    (
+    async (
       {
         userId,
         room,
@@ -26,10 +26,12 @@ io.on('connection', (socket) => {
       if (!user) {
         user = { id: userId ?? nanoid(15), username };
         rooms[room].users.push(user);
-        socket.to(room).emit('user-changes', { action: 'join', user });
-        console.log(user);
       }
       socket.join(room);
+      socket.to(room).emit('user-changes', {
+        action: 'join',
+        user: { ...user, ts: Date.now() },
+      });
       callback({ status: 'success', userId: user.id });
     }
   );
@@ -48,10 +50,6 @@ io.on('connection', (socket) => {
       callback({ room, userId });
     }
   );
-
-  socket.on('exist', (room: string, callback) => {
-    callback(room in rooms);
-  });
 
   socket.on(
     'sendData',

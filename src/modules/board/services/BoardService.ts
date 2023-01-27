@@ -42,13 +42,7 @@ export class BoardService {
     this.socket.off('user-changes', cb);
   }
 
-  roomExist(room: string) {
-    return new Promise<boolean>((r) => {
-      this.socket.send<string, boolean>('exist', room, r);
-    });
-  }
-
-  joinRoom(data: { room: string; username: string }) {
+  joinRoom(data: { room: string; username: string; userId: string }) {
     return new Promise<JoinResponse>((r) => {
       this.socket.send<typeof data, JoinResponse>('join', data, r);
     });
