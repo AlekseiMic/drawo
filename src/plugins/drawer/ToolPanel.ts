@@ -100,4 +100,8 @@ export class ToolPanel {
   addTool(tool: new (manager: Manager) => ITool) {
     this._tools[tool.name] = new tool(this.manager);
   }
+
+  addTools(...tools: (new (manager: Manager) => ITool)[]) {
+    tools.forEach((tool) => this.addTool(tool));
+  }
 }

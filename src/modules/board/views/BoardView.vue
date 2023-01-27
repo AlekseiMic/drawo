@@ -1,110 +1,95 @@
 <script lang="ts">
 import SimpleModal from '../../../components/SimpleModal.vue';
-import UsernameForm from '../components/UsernameForm.vue';
 import DrawerBoard from '../components/DrawerBoard.vue';
-import { inject, watch, ref } from 'vue';
+import { inject } from 'vue';
 import { BoardService } from '../services/BoardService';
 import { Storage } from '../services/Storage';
 import AlphaButton from '@ui/buttons/AlphaButton.vue';
 
 export default {
-  components: { UsernameForm, SimpleModal, AlphaButton, DrawerBoard },
+  components: { SimpleModal, AlphaButton, DrawerBoard },
   setup() {
     const boardService$ = inject('boardService') as BoardService;
     const storage$ = inject('storage') as Storage;
-    const username = ref(storage$.name);
-    const userId = ref(storage$.userId);
-    const room = ref('');
-    const connectedOnce = ref(false);
-    const isConnected = ref(false);
-    const roomExist = ref<undefined | boolean>(undefined);
-
-    watch([username, room], async ([newUsername, newRoom]) => {
-      if (!newUsername || !newRoom) {
-        isConnected.value = false;
-        return;
-      }
-
-      const result = await boardService$.joinRoom({
-        room: newRoom,
-        username: newUsername,
-      });
-
-      if (result.status !== 'success') return;
-
-      isConnected.value = true;
-      connectedOnce.value = true;
-
-      if (userId.value !== result.userId && result.userId) {
-        storage$.userId = result.userId;
-      }
-    });
-
-    return {
-      boardService$,
-      storage$,
-      username,
-      userId,
-      room,
-      connectedOnce,
-      isConnected,
-      roomExist,
-    };
+    return { boardService$, storage$ };
+  },
+  data() {
+    const connected = false;
+    const user = { name: '', id: '' };
+    return { room: '', connected, error: '', user };
   },
   watch: {
     $route: {
-      handler(route) {
-        this.checkRoom(route);
+      handler(next) {
+        this.room = next.params.id as string;
+      },
+      immediate: true,
+    },
+    storage$: {
+      handler(next: Storage) {
+        this.user.name = next.name;
+        this.user.id = next.id;
+        // console.log(next);
+      },
+      immediate: true,
+    },
+    room: {
+      handler(next, current) {
+        if (this.connected && next !== current) {
+          this.disconnect();
+        }
+        this.connect();
       },
       immediate: true,
     },
   },
   methods: {
-    handleClose() {
+    goToBoard() {
       this.$router.push('/board');
     },
-    handleError() {
-      this.$router.push({ path: '/board' });
+    async connect() {
+      const result = await this.boardService$.joinRoom({
+        room: this.room,
+        username: this.user.name,
+        userId: this.user.id,
+      });
+
+      if (result.status !== 'success') {
+        this.error = 'cannot connect';
+        return;
+      }
+
+      this.connected = true;
+      if (result.userId && result.userId !== this.user.id) {
+        this.storage$.saveData({ id: result.userId });
+      }
+    },
+    disconnect() {
+      this.boardService$.disconnect();
+      this.connected = false;
     },
     handleSubmit(username: string) {
       this.storage$.name = username;
-      this.username = username;
-    },
-    async checkRoom(route: typeof this.$route) {
-      this.room = route.params.id as string;
-      if (!this.room) this.$router.push('/board');
-      this.roomExist = await this.boardService$.roomExist(this.room);
+      this.user.name = username;
     },
   },
 };
 </script>
 
 <template>
-  <div v-if="roomExist === false">
+  <div v-if="error" class="backdrop">
     <SimpleModal
       small
       skip-outside-click
       is-open
       title="error"
-      @close="handleError"
+      @close="goToBoard"
     >
-      <p>room not found</p>
-      <AlphaButton class="error-btn" full @click="handleError">ok</AlphaButton>
+      <p>{{ error }}</p>
+      <AlphaButton class="error-btn" full @click="goToBoard">ok</AlphaButton>
     </SimpleModal>
   </div>
-  <div v-if="roomExist && !username">
-    <SimpleModal
-      small
-      skip-outside-click
-      is-open
-      title="username"
-      @close="handleClose"
-    >
-      <UsernameForm @submit="handleSubmit" />
-    </SimpleModal>
-  </div>
-  <div v-if="roomExist && !isConnected" class="backdrop"></div>
-  <DrawerBoard v-if="connectedOnce" :room="room" />
+  <DrawerBoard v-if="connected" :user="user" :room="room" />
 </template>
 
 <style scoped>

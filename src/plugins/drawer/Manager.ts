@@ -15,6 +15,8 @@ type Actions = {
   pending: Action[];
 };
 
+type Reducer = (m: Manager, s: RedrawState, a: Action) => void;
+
 export class Manager {
   public rect: Rect = { left: 0, top: 0, right: 0, bottom: 0 };
 
@@ -91,8 +93,12 @@ export class Manager {
     if (shouldResize) this.onResize();
   }
 
-  addReducer(reducer: (m: Manager, s: RedrawState, a: Action) => void) {
+  addReducer(reducer: Reducer) {
     this._reducers.push(reducer);
+  }
+
+  addReducers(...reducers: Reducer[]) {
+    reducers.forEach((reducer) => this.addReducer(reducer));
   }
 
   update(ts: number) {

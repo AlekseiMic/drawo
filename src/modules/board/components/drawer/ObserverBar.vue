@@ -35,8 +35,8 @@ export default {
       }"
       @click="$emit('changeObserver', observer)"
     >
-      <span>
-        {{ users[observer.id] }}
+      <span :title="users[observer.id]">
+        {{ users[observer.id].slice(0,2).toUpperCase() }}
       </span>
     </IconButton>
   </div>
@@ -54,7 +54,6 @@ export default {
   }
   & span {
     display: block;
-    max-width: 2ch;
     overflow: hidden;
   }
   &.active {

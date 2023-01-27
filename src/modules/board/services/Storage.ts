@@ -1,25 +1,24 @@
 export class Storage {
-  set name(name: string) {
-    this.saveData({ ...this.loadData(), name });
+  public name: string = '';
+  public id: string = '';
+
+  constructor() {
+    this.loadData();
   }
 
-  get name() {
-    return this.loadData().name ?? '';
+  private loadData() {
+    const data = JSON.parse(window.localStorage.getItem('session') ?? '{}');
+    this.name = data?.name ?? '';
+    this.id = data?.id ?? '';
   }
 
-  set userId(id: string) {
-    this.saveData({ ...this.loadData(), id });
-  }
+  public saveData({ name, id }: { name?: string; id?: string }) {
+    if (name && this.name !== name) this.name = name;
+    if (id && this.id !== id) this.id = id;
 
-  get userId() {
-    return this.loadData().id ?? '';
-  }
-
-  private loadData(): { id?: string; name?: string } {
-    return JSON.parse(window.localStorage.getItem('session') ?? '{}');
-  }
-
-  private saveData(data: { name?: string; id?: string }) {
-    window.localStorage.setItem('session', JSON.stringify(data));
+    window.localStorage.setItem(
+      'session',
+      JSON.stringify({ name: name || this.name, id: id || this.id })
+    );
   }
 }
