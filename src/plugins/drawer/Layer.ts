@@ -10,15 +10,22 @@ export class Layer {
 
   private _scratches: Record<string, { order: number; scratch: IScratch }> = {};
 
-  private _sorted: IScratch[] = [];
+  public _sorted: string[] = [];
 
   private _shouldSort = false;
 
+  getScratchesObject() {
+    return this._scratches;
+  }
+
   get scratches() {
     if (this._shouldSort) {
-      this._sorted = Object.values(this._scratches)
-        .sort((a, b) => a.order - b.order)
-        .map((item) => item.scratch);
+      this._sorted.length = 0;
+      this._sorted.push(
+        ...Object.values(this._scratches)
+          .sort((a, b) => a.order - b.order)
+          .map((item) => item.scratch.id)
+      );
     }
     return this._sorted;
   }
@@ -29,7 +36,7 @@ export class Layer {
   }
 
   hasScratchesAbove(id: string) {
-    return this._sorted[this._sorted.length - 1].id !== id;
+    return this._sorted[this._sorted.length - 1] !== id;
   }
 
   setMultiple(data: { order: number; scratch: IScratch }[]) {
@@ -52,14 +59,18 @@ export class Layer {
       scratch,
     };
     if (!order) {
-      this._sorted.push(scratch);
+      this._sorted.push(scratch.id);
     } else {
       this._shouldSort = true;
     }
   }
 
   remove(scratchId: string) {
+    if (this._sorted[this._sorted.length - 1] !== scratchId) {
+      this._shouldSort = true;
+    } else {
+      this._sorted.pop();
+    }
     delete this._scratches[scratchId];
-    this._shouldSort = true;
   }
 }

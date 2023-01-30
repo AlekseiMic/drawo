@@ -11,6 +11,7 @@ export default {
       default: () => [],
     },
   },
+emits: ['delete-layer'],
 };
 </script>
 
@@ -22,6 +23,7 @@ export default {
       :key="layer.id"
       :layer="layer"
       :index="idx"
+      @delete-layer="$emit('delete-layer', $event)"
     />
   </div>
 </template>

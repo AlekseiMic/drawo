@@ -1,14 +1,12 @@
 <script lang="ts">
-import { IScratch } from '../../../../plugins/drawer';
-import { PropType } from 'vue';
-
 export default {
   props: {
     scratch: {
-      type: Object as PropType<IScratch>,
+      type: String,
       required: true,
     },
   },
+  emits: ['deleteScratch'],
 };
 </script>
 
@@ -16,6 +14,7 @@ export default {
   <div class="scratch">
     <div class="miniature"></div>
     <span class="name">Scratch</span>
+    <button @click="$emit('deleteScratch', scratch)">Delete</button>
   </div>
 </template>
 

@@ -50,7 +50,7 @@ export class PenTool extends BaseTool implements ITool {
       layerId: "preview",
       id: this.id,
       payload: {
-        layerId: layer.id,
+        layerId: layer,
         state: ScratchState.active,
       },
     });

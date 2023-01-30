@@ -145,7 +145,9 @@ export class Manager {
         for (const rect of rects) {
           if (!changes.resize) drawer.clear(imageData, rect);
 
-          for (const scratch of scratches) {
+          for (const scratchId of scratches) {
+            const scratch = layer.getScratch(scratchId);
+            if (!scratch) continue;
             if (!scratch.isIntersectsRect(rect)) continue;
             scratch.draw(imageData, drawer, rect);
           }
@@ -161,6 +163,16 @@ export class Manager {
         return imageData;
       });
     }
+  }
+
+  removeScratch(layerId: string, scratchId: string) {
+    this.dispatch({
+      layerId,
+      id: scratchId,
+      user: this.user,
+      type: 'removeScratch',
+      payload: {},
+    });
   }
 
   dispatch(action: Action | Action[], internal = true) {

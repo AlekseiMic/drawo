@@ -31,12 +31,12 @@ export default {
 </script>
 
 <template>
-  <div class="panel">
+  <div class="panel" @mouseup.stop="" @mousedown.stop="">
     <IconButton
       v-for="tool in tools"
       :key="tool"
       :class="{ tool: true, active: active === tool }"
-      @click="$emit('changeTool', tool)"
+      @click.stop="$emit('changeTool', tool)"
     >
       <component :is="toolIcons[tool]" />
     </IconButton>

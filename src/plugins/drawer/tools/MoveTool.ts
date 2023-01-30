@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import { IScratch, ScratchState } from '../interfaces/IScratch';
 import { ITool } from '../interfaces/ITool';
 import { Point } from '../interfaces/Point';
@@ -31,7 +32,7 @@ export class MoveTool extends BaseTool implements ITool {
     this.hovered = s;
     this.manager.dispatch({
       type: 'moveScratch',
-      layerId: this.manager.layers!.active?.id,
+      layerId: this.manager.layers!.active!,
       id: s.id,
       payload: {
         layerId: 'preview',
@@ -50,7 +51,7 @@ export class MoveTool extends BaseTool implements ITool {
       layerId: 'preview',
       id: s.id,
       payload: {
-        layerId: this.manager.layers!.active?.id,
+        layerId: this.manager.layers!.active,
         state: ScratchState.active,
       },
     });
@@ -160,8 +161,11 @@ export class MoveTool extends BaseTool implements ITool {
     if (this.hovered && this.isHovers(this.hovered, p)) return;
     if (this.hovered) this.unhover();
 
-    for (const s of this.manager.layers!.active.scratches) {
-      if (!this.isHovers(s, p)) continue;
+    const layer = this.manager.layers!.getActive();
+    const activeScratchesIds = layer?.scratches ?? [];
+    for (const id of activeScratchesIds) {
+      const s = layer?.getScratch(id);
+      if (!s || !this.isHovers(s, p)) continue;
       this.hover(s);
       break;
     }

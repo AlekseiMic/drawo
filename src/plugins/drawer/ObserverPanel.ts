@@ -2,6 +2,7 @@ import { Observer } from './Observer';
 
 export class ObserverPanel {
   public active: Observer | null = null;
+
   public observers: Observer[] = [];
 
   create(id: string) {

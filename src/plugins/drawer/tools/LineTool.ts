@@ -1,11 +1,11 @@
-import { nanoid } from "nanoid";
-import { Action } from "../interfaces/Action";
-import { ScratchState } from "../interfaces/IScratch";
-import { ITool } from "../interfaces/ITool";
-import { Point } from "../interfaces/Point";
-import { Manager } from "../Manager";
-import { LineScratch } from "../scratches/LineScratch";
-import { BaseTool } from "./BaseTool";
+import { nanoid } from 'nanoid';
+import { Action } from '../interfaces/Action';
+import { ScratchState } from '../interfaces/IScratch';
+import { ITool } from '../interfaces/ITool';
+import { Point } from '../interfaces/Point';
+import { Manager } from '../Manager';
+import { LineScratch } from '../scratches/LineScratch';
+import { BaseTool } from './BaseTool';
 
 export class LineTool extends BaseTool implements ITool {
   private start: Point | undefined;
@@ -33,8 +33,8 @@ export class LineTool extends BaseTool implements ITool {
     this.id = nanoid();
 
     this.manager.dispatch({
-      type: "addScratch",
-      layerId: "preview",
+      type: 'addScratch',
+      layerId: 'preview',
       id: this.id,
       payload: {
         tool: this.constructor.name,
@@ -53,11 +53,11 @@ export class LineTool extends BaseTool implements ITool {
     this.active = false;
 
     this.manager.dispatch({
-      type: "moveScratch",
-      layerId: "preview",
+      type: 'moveScratch',
+      layerId: 'preview',
       id: this.id,
       payload: {
-        layerId: layer.id,
+        layerId: layer,
         state: ScratchState.active,
       },
     });
@@ -73,8 +73,8 @@ export class LineTool extends BaseTool implements ITool {
 
   private changeScratch() {
     this.manager.dispatch({
-      type: "changeScratch",
-      layerId: "preview",
+      type: 'changeScratch',
+      layerId: 'preview',
       id: this.id,
       payload: {
         start: this.start,
@@ -96,14 +96,14 @@ export class LineTool extends BaseTool implements ITool {
   }
 
   protected disableListeners() {
-    window.removeEventListener("mousedown", this.mousedownListener);
-    window.removeEventListener("mouseup", this.mouseupListener);
-    window.removeEventListener("mousemove", this.mousemoveListener);
+    window.removeEventListener('mousedown', this.mousedownListener);
+    window.removeEventListener('mouseup', this.mouseupListener);
+    window.removeEventListener('mousemove', this.mousemoveListener);
   }
 
   protected applyListeners() {
-    window.addEventListener("mousedown", this.mousedownListener);
-    window.addEventListener("mouseup", this.mouseupListener);
-    window.addEventListener("mousemove", this.mousemoveListener);
+    window.addEventListener('mousedown', this.mousedownListener);
+    window.addEventListener('mouseup', this.mouseupListener);
+    window.addEventListener('mousemove', this.mousemoveListener);
   }
 }
