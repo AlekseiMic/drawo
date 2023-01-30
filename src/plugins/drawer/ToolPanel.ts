@@ -45,6 +45,16 @@ export class ToolPanel {
           s.addNewScratchToDraw(a.layerId, a.id);
           break;
         }
+        case 'removeScratch': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          if (!s.isMarked(a.layerId, a.id)) {
+            s.addRectToRedraw(a.layerId, scratch.rect);
+            s.markChanged(a.layerId, a.id);
+          }
+          m.layers!.layers[a.layerId].remove(a.id);
+          break;
+        }
         case 'translateScratch': {
           const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
           if (!scratch) return;

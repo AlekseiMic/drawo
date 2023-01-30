@@ -7,6 +7,7 @@ export default {
     layer: Object as PropType<Layer>,
     index: Number,
   },
+  emits: ['delete-layer'],
 };
 </script>
 
@@ -14,6 +15,9 @@ export default {
   <div class="layer">
     <div class="miniature" />
     <div class="name">Layer #{{ index }}</div>
+    <button v-if="layer && layer.id" @click="$emit('delete-layer', layer!.id)">
+      delete
+    </button>
   </div>
 </template>
 
@@ -34,4 +38,3 @@ export default {
   box-shadow: 0;
 }
 </style>
-

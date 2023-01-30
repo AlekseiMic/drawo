@@ -35,8 +35,9 @@ export default {
       }"
       @click="$emit('changeObserver', observer)"
     >
-      <span :title="users[observer.id]">
-        {{ users[observer.id].slice(0, 2).toUpperCase() }}
+      <span :title="observer.id">
+      {{ observer.id }}
+        <!-- {{ users[observer.id].slice(0, 2).toUpperCase() }} -->
       </span>
     </IconButton>
   </div>

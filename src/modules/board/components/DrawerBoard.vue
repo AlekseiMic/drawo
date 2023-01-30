@@ -1,5 +1,5 @@
 <script lang="ts">
-import { inject, PropType } from 'vue';
+import { inject, shallowReactive, PropType, reactive, ref } from 'vue';
 import {
   Manager,
   LineTool,
@@ -35,14 +35,17 @@ export default {
     };
   },
   data() {
-    const board = new Manager(this.user.id);
+    const board = shallowReactive(new Manager(this.user.id));
 
-    const toolPanel = new ToolPanel(board);
+    const toolPanel = shallowReactive(new ToolPanel(board));
+
     toolPanel.addTools(LineTool, MoveTool, PenTool);
 
-    const layerPanel = new LayerPanel();
+    const layerPanel = shallowReactive(new LayerPanel());
 
-    const observerPanel = new ObserverPanel();
+    const observerPanel = shallowReactive(new ObserverPanel());
+    observerPanel.observers = shallowReactive([]);
+
     observerPanel.active = observerPanel.create(this.user.id);
 
     board.addReducers(toolPanel.gerReducer(), observerReducer);
@@ -151,6 +154,13 @@ export default {
     changeColor(color: string) {
       this.board.toolPanel.colorHex = color;
     },
+    deleteScratch(id: string) {
+      console.log(this.layerPanel.active);
+      this.board.removeScratch(this.layerPanel.active, id);
+    },
+    deleteLayer(id: string) {
+      delete this.layerPanel.layers[id];
+    },
   },
 };
 </script>
@@ -161,10 +171,12 @@ export default {
     :line-width="toolPanel.thickness"
     :color="toolPanel.colorHex"
     :layers="(layerPanel as LayerPanel).layersOrdered"
-    :scratches="layerPanel.active?.scratches"
+    :scratches="layerPanel.activeScratchesRef.value"
     class="right-panel"
     @change-width="changeWidth"
     @change-color="changeColor"
+    @delete-scratch="deleteScratch"
+    @delete-layer="deleteLayer"
   />
   <ToolBar
     class="toolbar"
