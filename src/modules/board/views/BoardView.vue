@@ -2,7 +2,7 @@
 import SimpleModal from '../../../components/SimpleModal.vue';
 import DrawerBoard from '../components/DrawerBoard.vue';
 import { inject } from 'vue';
-import { BoardService } from '../services/BoardService';
+import { BoardService, ResponseStatus } from '../services/BoardService';
 import { Storage } from '../services/Storage';
 import AlphaButton from '@ui/buttons/AlphaButton.vue';
 
@@ -29,16 +29,15 @@ export default {
       handler(next: Storage) {
         this.user.name = next.name;
         this.user.id = next.id;
-        // console.log(next);
       },
       immediate: true,
     },
     room: {
       handler(next, current) {
         if (this.connected && next !== current) {
-          this.disconnect();
+          this.quitRoom();
         }
-        this.connect();
+        if (next) this.connect();
       },
       immediate: true,
     },
@@ -50,23 +49,27 @@ export default {
     async connect() {
       const result = await this.boardService$.joinRoom({
         room: this.room,
-        username: this.user.name,
-        userId: this.user.id,
+        name: this.user.name,
+        id: this.user.id,
       });
 
-      if (result.status !== 'success') {
-        this.error = 'cannot connect';
-        return;
-      }
+      this.connected = result.status === ResponseStatus.Success;
 
-      this.connected = true;
-      if (result.userId && result.userId !== this.user.id) {
-        this.storage$.saveData({ id: result.userId });
+      if (!this.connected) this.error = 'cannot connect';
+
+      if (result.id && result.id !== this.user.id) {
+        this.storage$.saveData({ id: result.id });
       }
     },
     disconnect() {
+      this.quitRoom();
       this.boardService$.disconnect();
+    },
+    async quitRoom() {
+      if (!this.connected) return;
+      await this.boardService$.quitRoom({ room: this.room, id: this.user.id });
       this.connected = false;
+      this.$router.replace('/board');
     },
     handleSubmit(username: string) {
       this.storage$.name = username;
@@ -89,7 +92,12 @@ export default {
       <AlphaButton class="error-btn" full @click="goToBoard">ok</AlphaButton>
     </SimpleModal>
   </div>
-  <DrawerBoard v-if="connected" :user="user" :room="room" />
+  <DrawerBoard
+    v-if="connected"
+    :user="user"
+    :room="room"
+    @quit-room="quitRoom"
+  />
 </template>
 
 <style scoped>

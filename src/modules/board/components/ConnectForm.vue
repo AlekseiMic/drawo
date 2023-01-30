@@ -2,9 +2,21 @@
 import PsiInput from '@ui/inputs/PsiInput.vue';
 import AlphaButton from '@ui/buttons/AlphaButton.vue';
 import BetaCheckbox from '@ui/inputs/BetaCheckbox.vue';
-import { useVuelidate } from '@vuelidate/core';
+import { ServerErrors, useVuelidate } from '@vuelidate/core';
 import { minLength, required, requiredIf } from '@vuelidate/validators';
-import { PropType } from 'vue';
+import { PropType, ref } from 'vue';
+
+const defaultValues = () => ({
+  username: '',
+  room: '',
+  create: true,
+});
+
+const defaultErrors = () => ({
+  username: '',
+  room: '',
+  general: '',
+});
 
 export default {
   components: {
@@ -14,48 +26,58 @@ export default {
   },
   props: {
     defaultValues: {
-      default: () => ({
-        username: '',
-        room: '',
-        create: true,
-      }),
-      type: Object as PropType<{
-        username: string;
-        room: string;
-        create: boolean;
-      }>,
+      default: defaultValues,
+      type: Object as PropType<ReturnType<typeof defaultValues>>,
+    },
+    errors: {
+      default: defaultErrors,
+      type: Object as PropType<ReturnType<typeof defaultErrors>>,
     },
   },
   emits: ['submit'],
-  setup: () => ({ v$: useVuelidate({}) }),
-  data() {
+  setup: () => {
+    const externalResults = ref<ServerErrors>({});
+
     return {
-      form: {
-        username: '',
-        room: '',
-        create: true,
-      },
+      externalResults,
+      v$: useVuelidate({ $externalResults: externalResults }),
     };
   },
+  data() {
+    return {
+      username: '',
+      room: '',
+      create: true,
+    };
+  },
+  watch: {
+    errors(next: ReturnType<typeof defaultErrors>) {
+      Object.entries(next).forEach(([name, error]) => {
+        if (!['username', 'room'].includes(name) || !error) return;
+        this.externalResults[name] = [error];
+      });
+    },
+    create() {
+      this.externalResults = {};
+    },
+  },
   beforeMount() {
-    if (this.defaultValues) this.form = { ...this.defaultValues };
+    if (this.defaultValues) Object.assign(this.$data, this.defaultValues);
   },
   methods: {
     handleSubmit() {
       if (!this.v$.$validate() || this.v$.$invalid) return;
-      this.$emit('submit', this.form);
+      this.$emit('submit', this.$data);
     },
   },
   validations() {
     return {
-      form: {
-        username: { required, minLength: minLength(5) },
-        room: {
-          requiredIf: requiredIf(() => !this.form.create),
-          minLength: minLength(15),
-        },
-        create: {},
+      username: { required, minLength: minLength(5) },
+      room: {
+        requiredIf: requiredIf(() => !this.create),
+        minLength: minLength(10),
       },
+      create: {},
     };
   },
 };
@@ -65,26 +87,25 @@ export default {
   <form @submit.prevent="handleSubmit">
     <PsiInput
       id="username"
-      v-model="v$.form.username.$model"
+      v-model="v$.username.$model"
       label="username"
-      :error="v$.form.username.$errors[0]?.$message"
+      :error="v$.username.$errors[0]?.$message"
+    />
+    <PsiInput
+      id="room"
+      v-model="v$.room.$model"
+      label="room"
+      :error="v$.room.$errors[0]?.$message"
     />
     <BetaCheckbox
       id="create"
-      v-model="v$.form.create.$model"
+      v-model="v$.create.$model"
       label="create"
       compact
       reverse
     />
-    <PsiInput
-      id="room"
-      v-model="v$.form.room.$model"
-      label="room"
-      :disabled="form.create"
-      :error="v$.form.room.$errors[0]?.$message"
-    />
-    <AlphaButton class="submit" full type="submit">{{
-      form.create ? 'create' : 'connect'
+    <AlphaButton :disabled="v$.$invalid" class="submit" full type="submit">{{
+      create ? 'create' : 'connect'
     }}</AlphaButton>
   </form>
 </template>
@@ -94,6 +115,6 @@ form {
   padding: 15px 0 30px 0;
 }
 .submit {
-  margin-top: 15px;
+  margin-top: 10px;
 }
 </style>

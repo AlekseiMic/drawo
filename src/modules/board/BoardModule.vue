@@ -15,11 +15,13 @@ export default {
   },
   setup() {
     const socket = new SocketService('http://localhost:5441');
-    const boardService = new BoardService(socket);
-    const storage = new Storage();
-    provide('boardService', boardService);
-    provide('storage', storage);
-    return { boardService };
+    const boardService$ = new BoardService(socket);
+    provide('boardService', boardService$);
+    provide('storage', new Storage());
+    return { boardService$ };
+  },
+  beforeUnmount() {
+    this.boardService$.disconnect();
   },
 };
 </script>

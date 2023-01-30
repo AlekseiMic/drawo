@@ -2,12 +2,13 @@
 export default {
   props: {
     full: Boolean,
+    blank: Boolean,
   },
 };
 </script>
 
 <template>
-  <button :class="{ full }">
+  <button :class="{ full, blank }">
     <slot></slot>
   </button>
 </template>
@@ -22,6 +23,16 @@ button {
   font-size: 1.6rem;
   &.full {
     width: 100%;
+  }
+  &.blank {
+    background: transparent;
+    border: 0;
+  }
+  &:hover {
+    opacity: .6;
+  }
+  &:focus {
+    outline: 2px solid purple;
   }
 }
 </style>
