@@ -4,9 +4,13 @@ export class ObserverPanel {
   public active: Observer | null = null;
   public observers: Observer[] = [];
 
-  create(user: string) {
-    const observer = new Observer(user);
+  create(id: string) {
+    const observer = new Observer(id);
     this.observers.push(observer);
     return observer;
+  }
+
+  remove(id: string) {
+    this.observers = this.observers.filter((o) => o.id !== id);
   }
 }

@@ -1,11 +1,13 @@
 <script lang="ts">
-export default {};
+import AlphaButton from './AlphaButton.vue';
+
+export default { components: { AlphaButton } };
 </script>
 
 <template>
-  <button>
+  <AlphaButton>
     <slot />
-  </button>
+  </AlphaButton>
 </template>
 
 <style scoped lang="scss">

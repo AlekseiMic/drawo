@@ -1,7 +1,7 @@
 <script lang="ts">
 import SimpleModal from '../../../components/SimpleModal.vue';
 import { inject } from 'vue';
-import { BoardService } from '../services/BoardService';
+import { BoardService, ResponseStatus } from '../services/BoardService';
 import ConnectForm from '../components/ConnectForm.vue';
 import { Storage } from '../services/Storage';
 
@@ -17,11 +17,15 @@ export default {
   },
   data: function () {
     return {
-      error: '',
       defaultValues: {
         username: '',
         room: '',
-        create: false,
+        create: true,
+      },
+      errors: {
+        username: '',
+        room: '',
+        general: '',
       },
     };
   },
@@ -33,29 +37,30 @@ export default {
       this.$router.push({ path: '/' });
     },
     async joinRoom(username: string, room: string) {
-      const data = { room, username };
-      const result = await this.boardService$.joinRoom(data);
-
-      if (result.status === 'success' && result.userId) {
-        this.storage$.name = username;
-        this.storage$.userId = result.userId;
-        this.$router.push({ path: `/board/${data.room}` });
-      }
+      this.storage$.saveData({ name: username });
+      this.$router.push({ path: `/board/${room}` });
     },
-    async createRoom(username: string) {
-      const result = await this.boardService$.createRoom({
-        username,
-      });
-      this.storage$.name = username;
-      this.storage$.userId = result.userId;
-      this.$router.push({ path: `/board/${result.room}` });
+    async createRoom(name: string, room?: string) {
+      const result = await this.boardService$.createRoom({ name, room });
+
+      if (result.status === ResponseStatus.Success) {
+        this.storage$.saveData({ name, id: result.id });
+        this.$router.push({ path: `/board/${result.room}` });
+      } else {
+        this.errors = {
+          room: 'room already exists',
+          username: '',
+          general: '',
+        };
+      }
     },
     async handleSubmit(data: {
       create: boolean;
       username: string;
       room: string;
     }) {
-      if (data.create) this.createRoom(data.username);
+      console.log('here');
+      if (data.create) this.createRoom(data.username, data.room);
       else this.joinRoom(data.username, data.room);
     },
   },
@@ -70,6 +75,10 @@ export default {
     title="create or connect"
     @close="handleClose"
   >
-    <ConnectForm :default-values="defaultValues" @submit="handleSubmit" />
+    <ConnectForm
+      :errors="errors"
+      :default-values="defaultValues"
+      @submit="handleSubmit"
+    />
   </SimpleModal>
 </template>

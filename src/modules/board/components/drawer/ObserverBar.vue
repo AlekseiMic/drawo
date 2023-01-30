@@ -36,7 +36,7 @@ export default {
       @click="$emit('changeObserver', observer)"
     >
       <span :title="users[observer.id]">
-        {{ users[observer.id].slice(0,2).toUpperCase() }}
+        {{ users[observer.id].slice(0, 2).toUpperCase() }}
       </span>
     </IconButton>
   </div>
@@ -49,9 +49,6 @@ export default {
 }
 .observer {
   cursor: pointer;
-  &:hover {
-    opacity: 0.8;
-  }
   & span {
     display: block;
     overflow: hidden;
@@ -62,4 +59,3 @@ export default {
   }
 }
 </style>
-

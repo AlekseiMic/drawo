@@ -1,8 +1,19 @@
 import { Action } from 'src/plugins/drawer';
 import { SocketService } from './SocketService';
 
-type JoinResponse = { status: 'success' | 'failure'; userId?: string };
-type CreateResponse = { room: string; userId: string };
+export enum ResponseStatus {
+  Success = 'success',
+  Failure = 'failure',
+}
+
+type Response<T> = {
+  status: ResponseStatus;
+  reason?: string;
+} & T;
+
+type JoinResponse = Response<{ id?: string }>;
+type QuitResponse = Response<{}>;
+type CreateResponse = Response<{ room: string; id: string }>;
 
 export class BoardService {
   private socket: SocketService;
@@ -42,13 +53,19 @@ export class BoardService {
     this.socket.off('user-changes', cb);
   }
 
-  joinRoom(data: { room: string; username: string; userId: string }) {
+  joinRoom(data: { room: string; id: string; name: string }) {
     return new Promise<JoinResponse>((r) => {
       this.socket.send<typeof data, JoinResponse>('join', data, r);
     });
   }
 
-  createRoom(data: { username: string; userId?: string }) {
+  quitRoom(data: { room: string; id: string }) {
+    return new Promise<QuitResponse>((r) => {
+      this.socket.send<typeof data, QuitResponse>('quit', data, r);
+    });
+  }
+
+  createRoom(data: { room?: string; name: string; id?: string }) {
     return new Promise<CreateResponse>((r) => {
       this.socket.send<typeof data, CreateResponse>('create', data, r);
     });

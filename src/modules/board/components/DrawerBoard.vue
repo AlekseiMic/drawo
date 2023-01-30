@@ -17,9 +17,10 @@ import ToolBar from './drawer/ToolBar.vue';
 import SettingsButton from './drawer/SettingsButton.vue';
 import ObserverBar from './drawer/ObserverBar.vue';
 import RightPanel from './drawer/RightPanel.vue';
+import QuitButton from './QuitButton.vue';
 
 export default {
-  components: { ToolBar, SettingsButton, ObserverBar, RightPanel },
+  components: { ToolBar, SettingsButton, ObserverBar, RightPanel, QuitButton },
   props: {
     room: { type: String, required: true },
     user: {
@@ -27,6 +28,7 @@ export default {
       required: true,
     },
   },
+  emits: ['quitRoom'],
   setup() {
     return {
       boardService$: inject('boardService') as BoardService,
@@ -98,14 +100,23 @@ export default {
       user,
       action,
     }: {
-      user: { username: string; id: string };
+      user: { name: string; id: string };
       action: string;
     }) {
       if (action === 'join' && !this.users[user.id]) {
-        this.users[user.id] = user.username;
+        this.users[user.id] = user.name;
         this.observerPanel.create(user.id);
       }
-      if (action === 'left') delete this.users[user.id];
+      if (action === 'leave') {
+        delete this.users[user.id];
+        if (this.observerPanel.active?.id === user.id) {
+          const self = this.observerPanel.observers.find(
+            (o) => o.id === this.user.id
+          );
+          this.observerPanel.active = self ?? null;
+        }
+        this.observerPanel.remove(user.id);
+      }
     },
     startChangesStream() {
       this.intervalHandle = setInterval(() => {
@@ -162,6 +173,7 @@ export default {
     @change-tool="setTool"
   />
   <Teleport to="#header-anchor">
+    <QuitButton @click="$emit('quitRoom')" />
     <ObserverBar
       class="observerbar"
       :observers="observerPanel.observers"
