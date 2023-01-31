@@ -106,7 +106,7 @@ export class Manager {
 
     window.requestAnimationFrame(this.update);
 
-    if (ts - this._prevTS < 10) return;
+    if (ts - this._prevTS < 5) return;
 
     this._prevTS = ts;
 
@@ -169,7 +169,6 @@ export class Manager {
     this.dispatch({
       layerId,
       id: scratchId,
-      user: this.user,
       type: 'removeScratch',
       payload: {},
     });
@@ -189,8 +188,13 @@ export class Manager {
     arr.pending.push(...actions);
   }
 
-  createLayer(z: number, id?: string) {
-    const layer = new Layer(z, id);
+  createLayer(z?: number, id?: string) {
+    let zIndex = z;
+    if (!zIndex) {
+      const layer = this.layers.layersOrdered[1];
+      zIndex = (this.layers.layers[layer]?.zIndex ?? 0) + 1;
+    }
+    const layer = new Layer(zIndex, id);
     this.layers!.layers[layer.id] = layer;
     this._drawer!.addLayer(layer.id, z);
     return layer;

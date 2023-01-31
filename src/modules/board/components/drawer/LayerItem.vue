@@ -1,21 +1,23 @@
 <script lang="ts">
-import { Layer } from 'src/plugins/drawer';
 import { PropType } from 'vue';
 
 export default {
   props: {
-    layer: Object as PropType<Layer>,
+    layer: {
+      type: Object as PropType<{ id: string; removable: boolean }>,
+      required: true,
+    },
     index: Number,
   },
-  emits: ['delete-layer'],
+  emits: ['delete-layer', 'selectLayer'],
 };
 </script>
 
 <template>
-  <div class="layer">
+  <div class="layer" @click="$emit('selectLayer', layer!.id)">
     <div class="miniature" />
-    <div class="name">Layer #{{ index }}</div>
-    <button v-if="layer && layer.id" @click="$emit('delete-layer', layer!.id)">
+    <div class="name">Layer {{ index }}</div>
+    <button v-if="layer.removable" @click="$emit('delete-layer', layer!.id)">
       delete
     </button>
   </div>

@@ -4,20 +4,26 @@ import LineWidthPicker from './LineWidthPicker.vue';
 import LayerList from './LayerList.vue';
 import ScratchList from './ScratchList.vue';
 import { PropType } from 'vue';
-import { Layer } from '../../../../plugins/drawer';
 
 export default {
   components: { ColorPicker, LineWidthPicker, LayerList, ScratchList },
   props: {
     lineWidth: { type: Number, required: true },
     color: { type: String, required: true },
-    layers: { type: Array as PropType<Layer[]>, default: () => [] },
+    layers: {
+      type: Array as PropType<{ id: string; removable: boolean }[]>,
+      default: () => [],
+    },
     scratches: { type: Array as PropType<string[]>, default: () => [] },
   },
-  emits: ['changeWidth', 'changeColor', 'delete-scratch', 'delete-layer'],
-  renderTriggered() {
-    console.log('render');
-  },
+  emits: [
+    'changeWidth',
+    'changeColor',
+    'delete-scratch',
+    'delete-layer',
+    'createLayer',
+    'selectLayer',
+  ],
   methods: {
     changeWidth(width: number) {
       this.$emit('changeWidth', width);
@@ -33,7 +39,12 @@ export default {
   <div @click.stop="" @mousedown.stop="" @mouseup.stop="">
     <LineWidthPicker :default-value="lineWidth" @change-width="changeWidth" />
     <ColorPicker :active="color" @change-color="changeColor" />
-    <LayerList :layers="layers" @delete-layer="$emit('delete-layer', $event)" />
+    <LayerList
+      :layers="layers"
+      @delete-layer="$emit('delete-layer', $event)"
+      @create-layer="$emit('createLayer')"
+      @select-layer="$emit('selectLayer', $event)"
+    />
     <ScratchList
       :scratches="scratches"
       @delete-scratch="$emit('delete-scratch', $event)"
