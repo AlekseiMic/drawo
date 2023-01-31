@@ -1,22 +1,23 @@
 <script lang="ts">
 import { PropType } from 'vue';
-import { Layer } from '../../../../plugins/drawer';
 import LayerItem from './LayerItem.vue';
 
 export default {
   components: { LayerItem },
   props: {
     layers: {
-      type: Array as PropType<Layer[]>,
-      default: () => [],
+      type: Array as PropType<{ id: string; removable: boolean }[]>,
+      required: true,
     },
   },
-emits: ['delete-layer'],
+  emits: ['delete-layer', 'createLayer', 'selectLayer'],
 };
 </script>
 
 <template>
-  <label>Layers</label>
+  <div>
+    <label>Layers</label><button @click="$emit('createLayer')">add</button>
+  </div>
   <div class="container">
     <LayerItem
       v-for="(layer, idx) in layers"
@@ -24,6 +25,7 @@ emits: ['delete-layer'],
       :layer="layer"
       :index="idx"
       @delete-layer="$emit('delete-layer', $event)"
+      @select-layer="$emit('selectLayer', $event)"
     />
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { inject, shallowReactive, PropType, reactive, ref } from 'vue';
+import { inject, shallowReactive, PropType } from 'vue';
 import {
   Manager,
   LineTool,
@@ -11,6 +11,7 @@ import {
   ObserverPanel,
   PenTool,
   Action,
+  DeleteTool,
 } from '../../../plugins/drawer/';
 import { BoardService } from '../services/BoardService';
 import ToolBar from './drawer/ToolBar.vue';
@@ -39,7 +40,7 @@ export default {
 
     const toolPanel = shallowReactive(new ToolPanel(board));
 
-    toolPanel.addTools(LineTool, MoveTool, PenTool);
+    toolPanel.addTools(LineTool, MoveTool, PenTool, DeleteTool);
 
     const layerPanel = shallowReactive(new LayerPanel());
 
@@ -61,6 +62,24 @@ export default {
       layerPanel,
       observerPanel,
     };
+  },
+  computed: {
+    layers() {
+      const hiddenLayers = ['preview'];
+      const lockedLayers = ['main'];
+      return this.layerPanel.layersOrdered.reduce(
+        (acc: { id: string; removable: boolean }[], id) => {
+          const layer = this.layerPanel.layers[id];
+          if (!layer || hiddenLayers.includes(id)) return acc;
+          acc.push({
+            id,
+            removable: !lockedLayers.includes(id),
+          });
+          return acc;
+        },
+        []
+      );
+    },
   },
   watch: {
     room: {
@@ -155,11 +174,18 @@ export default {
       this.board.toolPanel.colorHex = color;
     },
     deleteScratch(id: string) {
-      console.log(this.layerPanel.active);
-      this.board.removeScratch(this.layerPanel.active, id);
+      if (this.layerPanel.active) {
+        this.board.removeScratch(this.layerPanel.active, id);
+      }
     },
     deleteLayer(id: string) {
-      delete this.layerPanel.layers[id];
+      this.layerPanel.remove(id);
+    },
+    createLayer() {
+      this.board.createLayer();
+    },
+    selectLayer(layerId: string) {
+      this.board.layers.setActive(layerId);
     },
   },
 };
@@ -170,13 +196,15 @@ export default {
   <RightPanel
     :line-width="toolPanel.thickness"
     :color="toolPanel.colorHex"
-    :layers="(layerPanel as LayerPanel).layersOrdered"
+    :layers="layers"
     :scratches="layerPanel.activeScratchesRef.value"
     class="right-panel"
     @change-width="changeWidth"
     @change-color="changeColor"
     @delete-scratch="deleteScratch"
     @delete-layer="deleteLayer"
+    @create-layer="createLayer"
+    @select-layer="selectLayer"
   />
   <ToolBar
     class="toolbar"

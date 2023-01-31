@@ -1,16 +1,18 @@
-import { reactive } from 'vue';
+import { reactive, shallowReactive } from 'vue';
 import { Layer } from './Layer';
 
 export class LayerPanel {
   public active: string | null = null;
 
-  public layers: Record<string, Layer> = {};
+  public layers: Record<string, Layer> = shallowReactive({});
 
   // only for vue
-  public activeScratchesRef: { value: string[] } = { value: [] };
+  public activeScratchesRef: { value: string[] } = reactive({ value: [] });
 
-  get layersOrdered(): Layer[] {
-    return Object.values(this.layers).sort((l1, l2) => l2.zIndex - l1.zIndex);
+  get layersOrdered(): string[] {
+    return Object.values(this.layers)
+      .sort((l1, l2) => l2.zIndex - l1.zIndex)
+      .map((layer) => layer.id);
   }
 
   setActive(layerId: string) {
@@ -24,5 +26,10 @@ export class LayerPanel {
   getActive() {
     if (!this.active) return undefined;
     return this.layers[this.active];
+  }
+
+  remove(layerId: string) {
+    if (layerId === 'preview') return;
+    delete this.layers[layerId];
   }
 }

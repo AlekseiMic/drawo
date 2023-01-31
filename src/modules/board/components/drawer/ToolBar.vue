@@ -9,6 +9,7 @@ const toolIcons: Record<string, string> = {
   LineTool: 'LineIcon',
   MoveTool: 'MoveIcon',
   PenTool: 'PenIcon',
+  DeleteTool: 'PenIcon',
 };
 
 export default {

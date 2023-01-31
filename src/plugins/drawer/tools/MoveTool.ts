@@ -23,7 +23,7 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   disable(): void {
-    document.body.style.cursor = 'default';
+    document.body.style.cursor = 'auto';
     super.disable();
   }
 
