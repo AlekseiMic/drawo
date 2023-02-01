@@ -16,11 +16,12 @@ export class LayerPanel {
   }
 
   setActive(layerId: string) {
+    if (layerId === 'preview') return;
     if (this.layers[layerId]) {
       this.layers[layerId]._sorted = reactive(this.layers[layerId]._sorted);
       this.activeScratchesRef.value = this.layers[layerId]._sorted;
-      this.active = layerId;
     }
+    this.active = layerId;
   }
 
   getActive() {
@@ -30,6 +31,10 @@ export class LayerPanel {
 
   remove(layerId: string) {
     if (layerId === 'preview') return;
+    if (layerId === this.active) {
+      const index = this.layersOrdered.findIndex((l) => l === this.active);
+      this.setActive(this.layersOrdered[index + 1] ?? null);
+    }
     delete this.layers[layerId];
   }
 }
