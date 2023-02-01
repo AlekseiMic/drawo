@@ -31,41 +31,33 @@ export class MoveTool extends BaseTool implements ITool {
     document.body.style.cursor = 'grab';
     this.hovered = s;
     this.manager.dispatch({
-      type: 'moveScratch',
+      type: 'hoverStart',
       layerId: this.manager.layers!.active!,
       id: s.id,
-      payload: {
-        layerId: 'preview',
-        state: ScratchState.hovered,
-      },
+      payload: {},
     });
   }
 
   private unhover() {
     if (!this.hovered) return;
     const s = this.hovered;
-    document.body.style.cursor = 'default';
+    document.body.style.cursor = 'auto';
     this.hovered = null;
     this.manager.dispatch({
-      type: 'moveScratch',
-      layerId: 'preview',
+      type: 'hoverEnd',
+      layerId: this.manager.layers!.active!,
       id: s.id,
-      payload: {
-        layerId: this.manager.layers!.active,
-        state: ScratchState.active,
-      },
+      payload: {},
     });
   }
 
   private drag(s: IScratch) {
     this.dragged = s;
     this.manager.dispatch({
-      type: 'changeScratch',
-      layerId: 'preview',
+      type: 'dragStart',
+      layerId: this.manager.layers.active!,
       id: s.id,
-      payload: {
-        state: ScratchState.dragged,
-      },
+      payload: {},
     });
   }
 
@@ -74,12 +66,10 @@ export class MoveTool extends BaseTool implements ITool {
     const s = this.dragged;
     this.dragged = null;
     this.manager.dispatch({
-      type: 'changeScratch',
-      layerId: 'preview',
+      type: 'dragEnd',
+      layerId: this.manager.layers.active!,
       id: s.id,
-      payload: {
-        state: ScratchState.hovered,
-      },
+      payload: {},
     });
   }
 
@@ -121,8 +111,8 @@ export class MoveTool extends BaseTool implements ITool {
 
   private dragMove(event: MouseEvent) {
     this.manager.dispatch({
-      type: 'translateScratch',
-      layerId: 'preview',
+      type: 'drag',
+      layerId: this.manager.layers.active!,
       id: this.dragged!.id,
       payload: {
         move: {

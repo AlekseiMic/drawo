@@ -1,12 +1,15 @@
 <script lang="ts">
-import ColorPicker from './ColorPicker.vue';
-import LineWidthPicker from './LineWidthPicker.vue';
 import LayerList from './LayerList.vue';
 import ScratchList from './ScratchList.vue';
 import { PropType } from 'vue';
+import SettingsList from './SettingsList.vue';
 
 export default {
-  components: { ColorPicker, LineWidthPicker, LayerList, ScratchList },
+  components: {
+    LayerList,
+    ScratchList,
+    SettingsList,
+  },
   props: {
     lineWidth: { type: Number, required: true },
     color: { type: String, required: true },
@@ -36,9 +39,13 @@ export default {
 </script>
 
 <template>
-  <div @click.stop="" @mousedown.stop="" @mouseup.stop="">
-    <LineWidthPicker :default-value="lineWidth" @change-width="changeWidth" />
-    <ColorPicker :active="color" @change-color="changeColor" />
+  <div class="panel" @click.stop="" @mousedown.stop="" @mouseup.stop="">
+    <SettingsList
+      :line-width="lineWidth"
+      :color="color"
+      @change-width="changeWidth"
+      @change-color="changeColor"
+    />
     <LayerList
       :layers="layers"
       @delete-layer="$emit('delete-layer', $event)"
@@ -52,4 +59,16 @@ export default {
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.settings {
+  flex: 1;
+}
+.panel {
+  overflow-y: auto;
+  height: calc(100vh - 50px);
+}
+.panel > * {
+  max-height: 33%;
+  height: 100%;
+}
+</style>

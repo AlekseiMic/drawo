@@ -24,13 +24,10 @@ export class DeleteTool extends BaseTool implements ITool {
     document.body.style.cursor = 'grab';
     this.hovered = s;
     this.manager.dispatch({
-      type: 'moveScratch',
+      type: 'hoverStart',
       layerId: this.manager.layers!.active!,
       id: s.id,
-      payload: {
-        layerId: 'preview',
-        state: ScratchState.hovered,
-      },
+      payload: {},
     });
   }
 
@@ -40,13 +37,10 @@ export class DeleteTool extends BaseTool implements ITool {
     document.body.style.cursor = 'auto';
     this.hovered = null;
     this.manager.dispatch({
-      type: 'moveScratch',
+      type: 'hoverEnd',
       layerId: 'preview',
       id: s.id,
-      payload: {
-        layerId: this.manager.layers!.active,
-        state: ScratchState.active,
-      },
+      payload: {},
     });
   }
 
@@ -84,15 +78,13 @@ export class DeleteTool extends BaseTool implements ITool {
     if (!this.hovered) return;
     const s = this.hovered;
 
+    this.unhover();
     this.manager.dispatch({
       type: 'removeScratch',
-      layerId: 'preview',
+      layerId: this.manager.layers.active!,
       id: s.id,
       payload: {},
     });
-
-    document.body.style.cursor = 'auto';
-    this.hovered = null;
   }
 
   protected applyListeners(): void {

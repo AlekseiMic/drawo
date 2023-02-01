@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Drawer } from './Drawer';
-import { Point } from './interfaces';
+import { Point, ScratchState } from './interfaces';
 import { Action } from './interfaces/Action';
 import { Rect } from './interfaces/Rect';
 import { Layer } from './Layer';
@@ -147,7 +147,11 @@ export class Manager {
 
           for (const scratchId of scratches) {
             const scratch = layer.getScratch(scratchId);
-            if (!scratch) continue;
+            if (
+              !scratch ||
+              (layerId !== 'preview' && scratch.state !== ScratchState.active)
+            )
+              continue;
             if (!scratch.isIntersectsRect(rect)) continue;
             scratch.draw(imageData, drawer, rect);
           }
@@ -155,7 +159,11 @@ export class Manager {
 
         for (const scratchId of changes.add) {
           const scratch = layer.getScratch(scratchId);
-          if (!scratch) continue;
+          if (
+            !scratch ||
+            (layerId !== 'preview' && scratch.state !== ScratchState.active)
+          )
+            continue;
           if (!scratch.isIntersectsRect(drawer.rect)) continue;
           scratch.draw(imageData, drawer);
         }
@@ -209,6 +217,11 @@ export class Manager {
 
   updateDrawerRect() {
     return this._drawer!.updateRect(this.rect);
+  }
+
+  removeLayer(id: string) {
+    this._drawer!.removeLayer(id);
+    this.layers.remove(id);
   }
 
   private onResize() {

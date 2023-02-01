@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { ScratchState } from './interfaces';
 import { Action } from './interfaces/Action';
 import { Color } from './interfaces/Color';
 import { ITool } from './interfaces/ITool';
@@ -72,6 +73,53 @@ export class ToolPanel {
             s.addRectToRedraw(a.layerId, scratch.rect);
             s.markChanged(a.layerId, a.id);
           }
+          scratch.change(a.payload);
+          break;
+        }
+        case 'hoverStart': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          scratch.state = ScratchState.hovered;
+          if (a.user !== this.manager.user) return;
+          m.layers!.layers.preview.add(scratch);
+          s.addNewScratchToDraw('preview', a.id);
+          break;
+        }
+        case 'hoverEnd': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          scratch.state = ScratchState.active;
+          if (a.user !== this.manager.user) return;
+          s.addRectToRedraw('preview', scratch.rect);
+          m.layers!.layers.preview.remove(scratch.id);
+          break;
+        }
+        case 'dragStart': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          scratch.state = ScratchState.dragged;
+          m.layers!.layers.preview.add(scratch);
+          s.addNewScratchToDraw('preview', a.id);
+          s.addRectToRedraw(a.layerId, scratch.rect);
+          break;
+        }
+        case 'drag': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          if (!s.isMarked('preview', a.id)) {
+            s.addRectToRedraw('preview', scratch.rect);
+            s.markChanged('preview', a.id);
+          }
+          scratch.move(a.payload.move);
+          break;
+        }
+        case 'dragEnd': {
+          const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+          if (!scratch) return;
+          scratch.state = ScratchState.active;
+          s.addRectToRedraw('preview', scratch.rect);
+          m.layers!.layers.preview.remove(scratch.id);
+          s.markChanged(a.layerId, a.id);
           scratch.change(a.payload);
           break;
         }

@@ -2,6 +2,7 @@
 import LineIcon from '@assets/svg/line.svg?component';
 import MoveIcon from '@assets/svg/move.svg?component';
 import PenIcon from '@assets/svg/pen.svg?component';
+import EraserIcon from '@assets/svg/eraser2.svg?component';
 import IconButton from '@ui/buttons/IconButton.vue';
 import { PropType } from 'vue';
 
@@ -9,11 +10,11 @@ const toolIcons: Record<string, string> = {
   LineTool: 'LineIcon',
   MoveTool: 'MoveIcon',
   PenTool: 'PenIcon',
-  DeleteTool: 'PenIcon',
+  DeleteTool: 'EraserIcon',
 };
 
 export default {
-  components: { LineIcon, MoveIcon, PenIcon, IconButton },
+  components: { LineIcon, MoveIcon, PenIcon, IconButton, EraserIcon },
   props: {
     tools: {
       type: Array as PropType<string[]>,
@@ -32,7 +33,7 @@ export default {
 </script>
 
 <template>
-  <div class="panel" @mouseup.stop="" @mousedown.stop="">
+  <div class="panel" @mousedown.stop="">
     <IconButton
       v-for="tool in tools"
       :key="tool"

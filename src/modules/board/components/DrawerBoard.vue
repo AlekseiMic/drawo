@@ -17,7 +17,7 @@ import { BoardService } from '../services/BoardService';
 import ToolBar from './drawer/ToolBar.vue';
 import SettingsButton from './drawer/SettingsButton.vue';
 import ObserverBar from './drawer/ObserverBar.vue';
-import RightPanel from './drawer/RightPanel.vue';
+import RightPanel from './drawer/rightPanel/RightPanel.vue';
 import QuitButton from './QuitButton.vue';
 
 export default {
@@ -179,7 +179,7 @@ export default {
       }
     },
     deleteLayer(id: string) {
-      this.layerPanel.remove(id);
+      this.board.removeLayer(id);
     },
     createLayer() {
       this.board.createLayer();
@@ -229,13 +229,14 @@ export default {
 #board-container {
   position: relative;
   width: 100%;
+  max-height: calc(100vh - 50px);
+  overflow: hidden;
 }
 
 .right-panel {
-  padding: 10px;
   background: #222;
   width: 240px;
-  box-shadow: -3px 0px 5px 0px var(--c-default-shadow);
+  /* box-shadow: -3px 0px 5px 0px var(--c-default-shadow); */
 }
 
 .toolbar {
