@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { IScratch } from './interfaces/IScratch';
+import { IScratch } from '../interfaces/IScratch';
 
 export type LayerOptions = Partial<{}>;
 

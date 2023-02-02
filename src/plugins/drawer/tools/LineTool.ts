@@ -1,18 +1,12 @@
-import { nanoid } from 'nanoid';
-import { Action } from '../interfaces/Action';
-import { ScratchState } from '../interfaces/IScratch';
 import { ITool } from '../interfaces/ITool';
 import { Point } from '../interfaces/Point';
-import { Manager } from '../Manager';
-import { LineScratch } from '../scratches/LineScratch';
-import { BaseTool } from './BaseTool';
+import { addScratch, changeScratch, Manager, moveScratch } from '../';
+import { BaseCreationalTool } from './BaseCreationalTool';
 
-export class LineTool extends BaseTool implements ITool {
-  private start: Point | undefined;
+export class LineTool extends BaseCreationalTool implements ITool {
+  private startPoint: Point | undefined;
 
-  private end: Point | undefined;
-
-  private id: string | undefined;
+  private endPoint: Point | undefined;
 
   constructor(manager: Manager) {
     super(manager);
@@ -22,77 +16,46 @@ export class LineTool extends BaseTool implements ITool {
     this.mousemoveListener = this.mousemoveListener.bind(this);
   }
 
-  create(a: Required<Action>) {
-    return LineScratch.create(a.id, a.user, a.payload);
-  }
-
   private mousedownListener(e: MouseEvent) {
-    this.active = true;
-    this.updateStartPoint(e);
-    this.updateEndPoint(e);
-    this.id = nanoid();
-
-    this.manager.dispatch({
-      type: 'addScratch',
-      layerId: 'preview',
-      id: this.id,
-      payload: {
-        tool: this.constructor.name,
-        start: this.start,
-        end: this.end,
-        state: ScratchState.preview,
-        color: this.manager.toolPanel!.color,
-        thickness: this.manager.toolPanel!.thickness,
-      },
-    });
+    this.start();
+    this.update(e, 'startPoint');
+    this.update(e, 'endPoint');
+    this.manager.dispatch(
+      addScratch(this.id!, {
+        ...this.getDefaultCreateOptions(),
+        ...this.getPoints(),
+      })
+    );
   }
 
-  private mouseupListener() {
-    const layer = this.manager.layers!.active;
-    if (!layer || !this.active) return;
-    this.active = false;
-
-    this.manager.dispatch({
-      type: 'moveScratch',
-      layerId: 'preview',
-      id: this.id,
-      payload: {
-        layerId: layer,
-        state: ScratchState.active,
-      },
-    });
-
-    this.id = undefined;
+  private mouseupListener(e: MouseEvent) {
+    const layerId = this.manager.layers!.active;
+    if (layerId && this.active && this.id) {
+      this.update(e, 'endPoint');
+      this.manager.dispatch(
+        moveScratch(this.id, { layerId, ...this.getPoints() })
+      );
+    }
+    this.end();
   }
 
   private mousemoveListener(e: MouseEvent) {
-    if (!this.active) return;
-    this.updateEndPoint(e);
-    this.changeScratch();
+    if (!this.active || !this.id) return;
+    this.update(e, 'endPoint');
+    this.manager.dispatch(changeScratch(this.id, this.getPoints()));
   }
 
-  private changeScratch() {
-    this.manager.dispatch({
-      type: 'changeScratch',
-      layerId: 'preview',
-      id: this.id,
-      payload: {
-        start: this.start,
-        end: this.end,
-      },
-    });
+  private getPoints() {
+    return {
+      start: this.startPoint,
+      end: this.endPoint,
+    };
   }
 
-  private updateStartPoint(e: MouseEvent) {
+  private update(e: MouseEvent, point: 'endPoint' | 'startPoint' = 'endPoint') {
     const offsetX = this.manager.rect.left - this.manager.offset.x;
     const offsetY = this.manager.rect.top - this.manager.offset.y;
-    this.start = { x: e.x + offsetX, y: e.y + offsetY };
-  }
-
-  private updateEndPoint(e: MouseEvent) {
-    const offsetX = this.manager.rect.left - this.manager.offset.x;
-    const offsetY = this.manager.rect.top - this.manager.offset.y;
-    this.end = { x: e.x + offsetX, y: e.y + offsetY };
+    this[point] = { x: e.x + offsetX, y: e.y + offsetY };
   }
 
   protected disableListeners() {

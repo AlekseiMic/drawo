@@ -1,13 +1,13 @@
-import { Color } from "./interfaces/Color";
-import { IScratch } from "./interfaces/IScratch";
-import { Pointable } from "./interfaces/Pointable";
-import { Rect } from "./interfaces/Rect";
+import { RGBA } from "../interfaces/Color";
+import { IScratch } from "../interfaces/IScratch";
+import { Pointable } from "../interfaces/Pointable";
+import { Rect } from "../interfaces/Rect";
 
 export class DrawService {
   drawPixels(
     imageData: ImageData,
     scratch: IScratch & Pointable,
-    color: Color,
+    color: RGBA,
     leftEdge: number,
     topEdge: number,
     rect: Rect

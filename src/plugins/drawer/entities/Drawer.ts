@@ -1,15 +1,15 @@
 /* eslint-disable no-unused-vars */
-import { IScratch, ScratchState } from "./interfaces/IScratch";
+import { IScratch, ScratchState } from "../interfaces/IScratch";
 import { Canvas } from "./Canvas";
 import { DrawService } from "./DrawService";
-import { Color } from "./interfaces/Color";
-import { Pointable } from "./interfaces/Pointable";
-import { Rect } from "./interfaces/Rect";
+import { RGBA } from "../interfaces/Color";
+import { Pointable } from "../interfaces/Pointable";
+import { Rect } from "../interfaces/Rect";
 
 export class Drawer {
   private drawService = new DrawService();
 
-  private stateColors: Partial<Record<ScratchState, Color>> = {
+  private stateColors: Partial<Record<ScratchState, RGBA>> = {
     [ScratchState.hovered]: { r: 150, g: 0, b: 255, a: 190 },
     [ScratchState.dragged]: { r: 255, g: 0, b: 0, a: 190 },
     [ScratchState.preview]: { r: 55, g: 0, b: 0, a: 190 },
@@ -27,8 +27,8 @@ export class Drawer {
 
   getColorForState(
     state: undefined | ScratchState,
-    fallback: Color = { r: 255, g: 255, b: 255, a: 255 }
-  ): Color {
+    fallback: RGBA = { r: 255, g: 255, b: 255, a: 255 }
+  ): RGBA {
     if (!state) return fallback;
     return this.stateColors[state] ?? fallback;
   }

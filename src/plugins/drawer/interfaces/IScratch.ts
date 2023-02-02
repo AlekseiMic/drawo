@@ -1,5 +1,5 @@
-import { Drawer } from "../Drawer";
-import { Color } from "./Color";
+import { Drawer } from "../entities/Drawer";
+import { RGBA } from "./Color";
 import { Point } from "./Point";
 import { Rect } from "./Rect";
 
@@ -16,7 +16,7 @@ export interface IScratch {
 
   state?: ScratchState;
 
-  color?: Color;
+  color?: RGBA;
 
   thickness: number;
 

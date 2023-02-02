@@ -1,4 +1,4 @@
-import { Drawer } from "../Drawer";
+import { Drawer } from "../";
 import { IScratch } from "../interfaces/IScratch";
 import { Point } from "../interfaces/Point";
 import { Pointable } from "../interfaces/Pointable";

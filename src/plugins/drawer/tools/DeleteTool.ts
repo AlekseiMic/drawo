@@ -2,7 +2,7 @@
 import { IScratch, ScratchState } from '../interfaces/IScratch';
 import { ITool } from '../interfaces/ITool';
 import { Point } from '../interfaces/Point';
-import { Manager } from '../Manager';
+import { hoverScratch, Manager, removeScratch, unhoverScratch } from '../';
 import { throttle } from '../utils/throttle';
 import { BaseTool } from './BaseTool';
 
@@ -23,12 +23,7 @@ export class DeleteTool extends BaseTool implements ITool {
   private hover(s: IScratch) {
     document.body.style.cursor = 'grab';
     this.hovered = s;
-    this.manager.dispatch({
-      type: 'hoverStart',
-      layerId: this.manager.layers!.active!,
-      id: s.id,
-      payload: {},
-    });
+    this.manager.dispatch(hoverScratch(s.id, {}, this.manager.layers!.active!));
   }
 
   private unhover() {
@@ -36,12 +31,9 @@ export class DeleteTool extends BaseTool implements ITool {
     const s = this.hovered;
     document.body.style.cursor = 'auto';
     this.hovered = null;
-    this.manager.dispatch({
-      type: 'hoverEnd',
-      layerId: 'preview',
-      id: s.id,
-      payload: {},
-    });
+    this.manager.dispatch(
+      unhoverScratch(s.id, {}, this.manager.layers!.active!)
+    );
   }
 
   private isHovers(s: IScratch, p: Point) {
@@ -77,14 +69,8 @@ export class DeleteTool extends BaseTool implements ITool {
   private click() {
     if (!this.hovered) return;
     const s = this.hovered;
-
     this.unhover();
-    this.manager.dispatch({
-      type: 'removeScratch',
-      layerId: this.manager.layers.active!,
-      id: s.id,
-      payload: {},
-    });
+    this.manager.dispatch(removeScratch(s.id, {}, this.manager.layers.active!));
   }
 
   protected applyListeners(): void {

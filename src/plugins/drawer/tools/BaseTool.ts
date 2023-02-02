@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { Action } from '../interfaces/Action';
-import { IScratch } from '../interfaces/IScratch';
 import { ITool } from '../interfaces/ITool';
-import { Manager } from '../Manager';
+import { Manager } from '../';
 
 export abstract class BaseTool implements ITool {
   protected active: boolean = false;
@@ -12,8 +10,6 @@ export abstract class BaseTool implements ITool {
   protected abstract applyListeners(): void;
 
   protected abstract disableListeners(): void;
-
-  create?(action: Action): IScratch;
 
   constructor(protected manager: Manager) {}
 
