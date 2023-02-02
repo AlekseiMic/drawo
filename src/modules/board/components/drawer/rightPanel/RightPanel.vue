@@ -11,8 +11,8 @@ export default {
     SettingsList,
   },
   props: {
-    lineWidth: { type: Number, required: true },
-    color: { type: String, required: true },
+    lineWidth: { type: Number, default: () => 3 },
+    color: { type: String, default: () => '#ffffff' },
     layers: {
       type: Array as PropType<{ id: string; removable: boolean }[]>,
       default: () => [],

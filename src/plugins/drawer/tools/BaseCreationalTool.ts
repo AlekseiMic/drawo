@@ -17,7 +17,7 @@ export abstract class BaseCreationalTool extends BaseTool {
   protected getDefaultCreateOptions() {
     return {
       tool: this.constructor.name,
-      ...this.manager.toolPanel.getSettings(),
+      ...this.manager.settings.getToolSettings(),
     };
   }
 }

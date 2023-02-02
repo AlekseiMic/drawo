@@ -1,4 +1,4 @@
-import { Drawer } from '../';
+import { DrawService } from '../';
 import { RGBA } from '../interfaces/Color';
 import { IScratch, ScratchState } from '../interfaces/IScratch';
 import { Point } from '../interfaces/Point';
@@ -29,9 +29,13 @@ export abstract class BaseScratch implements IScratch {
 
   abstract change(data: any): void;
 
-  abstract draw(data: ImageData, drawer: Drawer, rect?: Rect | undefined): void;
+  abstract draw(
+    data: ImageData,
+    drawer: DrawService,
+    rect?: Rect | undefined
+  ): void;
 
-  set state(s: undefined | ScratchState) {
+  set state(s: ScratchState) {
     if (!s) return;
     if (s !== this.state) {
       this._state = s;

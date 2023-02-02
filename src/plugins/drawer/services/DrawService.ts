@@ -1,9 +1,37 @@
-import { RGBA } from "../interfaces/Color";
-import { IScratch } from "../interfaces/IScratch";
-import { Pointable } from "../interfaces/Pointable";
-import { Rect } from "../interfaces/Rect";
+import { RGBA } from '../interfaces/Color';
+import { IScratch } from '../interfaces/IScratch';
+import { Pointable } from '../interfaces/Pointable';
+import { Rect } from '../interfaces/Rect';
+import { CanvasManager } from './CanvasManager';
+import { SettingsStore } from './SettingsStore';
 
 export class DrawService {
+  constructor(
+    private _canvasManager: CanvasManager,
+    private _settings: SettingsStore
+  ) {}
+
+  draw(imageData: ImageData, scratch: IScratch & Pointable, rect?: Rect) {
+    this.drawPixels(
+      imageData,
+      scratch,
+      this._settings.getColorForState(scratch.state, scratch.color),
+      this._canvasManager.rect.left,
+      this._canvasManager.rect.top,
+      rect ?? this._canvasManager.rect
+    );
+  }
+
+  clear(imageData: ImageData, rect?: Rect) {
+    this.clearRect(
+      imageData,
+      this._canvasManager.rect.left,
+      this._canvasManager.rect.top,
+      rect ?? this._canvasManager.rect
+    );
+  }
+
+  // eslint-disable-next-line no-dupe-class-members
   drawPixels(
     imageData: ImageData,
     scratch: IScratch & Pointable,

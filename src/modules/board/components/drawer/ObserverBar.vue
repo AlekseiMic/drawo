@@ -1,13 +1,13 @@
 <script lang="ts">
 import IconButton from '@ui/buttons/IconButton.vue';
-import { Observer } from 'src/plugins/drawer';
+import { User } from 'src/plugins/drawer';
 import { PropType } from 'vue';
 
 export default {
   components: { IconButton },
   props: {
     observers: {
-      type: Array as PropType<Observer[]>,
+      type: Array as PropType<User[]>,
       default: () => [],
     },
     users: {
@@ -15,7 +15,7 @@ export default {
       required: true,
     },
     active: {
-      type: Object as PropType<null | Observer>,
+      type: String as PropType<string | null>,
       default: () => null,
     },
   },
@@ -31,7 +31,7 @@ export default {
       :title="users[observer.id]"
       :class="{
         observer: true,
-        active: active === observer,
+        active: active === observer.id,
       }"
       @click="$emit('changeObserver', observer)"
     >

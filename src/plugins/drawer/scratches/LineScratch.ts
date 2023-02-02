@@ -1,13 +1,13 @@
-import { Drawer } from "../";
-import { IScratch } from "../interfaces/IScratch";
-import { Point } from "../interfaces/Point";
-import { Pointable } from "../interfaces/Pointable";
-import { Rect } from "../interfaces/Rect";
-import { distanceToLine, line } from "../utils/line";
-import { BaseScratch } from "./BaseScratch";
+import { DrawService } from '../';
+import { IScratch } from '../interfaces/IScratch';
+import { Point } from '../interfaces/Point';
+import { Pointable } from '../interfaces/Pointable';
+import { Rect } from '../interfaces/Rect';
+import { distanceToLine, line } from '../utils/line';
+import { BaseScratch } from './BaseScratch';
 
 export class LineScratch extends BaseScratch implements IScratch, Pointable {
-  points: Uint32Array = new Uint32Array();
+  public points: Uint32Array = new Uint32Array();
 
   private _start: Point = { x: 0, y: 0 };
 
@@ -106,8 +106,8 @@ export class LineScratch extends BaseScratch implements IScratch, Pointable {
     );
   }
 
-  draw(data: ImageData, drawer: Drawer, rect?: Rect) {
+  draw(data: ImageData, drawer: DrawService, rect?: Rect) {
     this.prepare();
-    drawer.drawPixels(data, this, rect);
+    drawer.draw(data, this, rect);
   }
 }

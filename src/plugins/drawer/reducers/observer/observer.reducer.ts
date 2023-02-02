@@ -6,13 +6,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
   switch (a.type) {
     case ActionType.MoveObserver: {
       if (!a.id) return;
-      m.move(a.id, a.payload.x, a.payload.y);
-      const shouldResize = m.updateDrawerRect();
-      if (shouldResize) {
-        Object.keys(m.layers!.layers).forEach((l) => {
-          s.makeFullRedraw(l);
-        });
-      }
+      m.users.move(a.id, a.payload.x, a.payload.y);
       break;
     }
     default:

@@ -1,10 +1,10 @@
-export class Observer {
+export class User {
+  public id: string;
+
   public center = {
     x: 1000,
     y: 1000,
   };
-
-  public id: string;
 
   constructor(id: string) {
     this.id = id;

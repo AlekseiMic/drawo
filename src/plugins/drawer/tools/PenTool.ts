@@ -13,7 +13,7 @@ export class PenTool extends BaseCreationalTool implements ITool {
 
   private startScratch(e: MouseEvent) {
     this.start();
-    this.manager.dispatch(
+    this.manager.actions.dispatch(
       addScratch(this.id!, {
         ...this.getDefaultCreateOptions(),
         ...this.getPoint(e),
@@ -24,7 +24,7 @@ export class PenTool extends BaseCreationalTool implements ITool {
   private finishScratch(e: MouseEvent) {
     const layerId = this.manager.layers!.active;
     if (this.active && layerId && this.id) {
-      this.manager.dispatch(
+      this.manager.actions.dispatch(
         moveScratch(this.id, { layerId, ...this.getPoint(e) })
       );
     }
@@ -33,7 +33,7 @@ export class PenTool extends BaseCreationalTool implements ITool {
 
   private addPoint(e: MouseEvent) {
     if (!this.active || !this.id) return;
-    this.manager.dispatch(changeScratch(this.id, this.getPoint(e)));
+    this.manager.actions.dispatch(changeScratch(this.id, this.getPoint(e)));
   }
 
   private getPoint(e: MouseEvent) {

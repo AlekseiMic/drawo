@@ -1,4 +1,4 @@
-import { Drawer } from '../';
+import { DrawService } from '../';
 import { IScratch } from '../interfaces/IScratch';
 import { Point } from '../interfaces/Point';
 import { Pointable } from '../interfaces/Pointable';
@@ -73,9 +73,9 @@ export class PenScratch extends BaseScratch implements IScratch, Pointable {
     this.isReady = false;
   }
 
-  draw(data: ImageData, drawer: Drawer, rect: Rect) {
+  draw(data: ImageData, drawer: DrawService, rect: Rect) {
     this.prepare();
-    drawer.drawPixels(data, this, rect);
+    drawer.draw(data, this, rect);
   }
 
   isIntersects(point: Point, region = 1): boolean {
