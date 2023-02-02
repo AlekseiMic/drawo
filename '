@@ -53,7 +53,9 @@ export class MoveTool extends BaseTool implements ITool {
 
   private drag(s: IScratch) {
     this.dragged = s;
-    this.manager.dispatch(dragScratch(s.id, {}, this.manager.layers.active!));
+    // this.manager.dispatch(
+    //   translateScratch(s.id, {}, this.manager.layers.active!)
+    // );
   }
 
   private drop() {
@@ -101,7 +103,7 @@ export class MoveTool extends BaseTool implements ITool {
 
   private dragMove(event: MouseEvent) {
     this.manager.dispatch(
-      translateScratch(this.dragged!.id, {
+      dragScratch(this.dragged!.id, {
         move: this.getCoordChange(event),
       })
     );

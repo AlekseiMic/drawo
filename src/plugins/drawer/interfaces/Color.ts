@@ -1,4 +1,4 @@
-export interface Color {
+export interface RGBA {
   r: number;
   g: number;
   b: number;

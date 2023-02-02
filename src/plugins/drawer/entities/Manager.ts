@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { Drawer } from './Drawer';
-import { Point, ScratchState } from './interfaces';
-import { Action } from './interfaces/Action';
-import { Rect } from './interfaces/Rect';
+import { Point, ScratchState } from '../interfaces';
+import { Action } from '../interfaces/Action';
+import { Rect } from '../interfaces/Rect';
 import { Layer } from './Layer';
 import { LayerPanel } from './LayerPanel';
 import { Observer } from './Observer';
@@ -171,15 +171,6 @@ export class Manager {
         return imageData;
       });
     }
-  }
-
-  removeScratch(layerId: string, scratchId: string) {
-    this.dispatch({
-      layerId,
-      id: scratchId,
-      type: 'removeScratch',
-      payload: {},
-    });
   }
 
   dispatch(action: Action | Action[], internal = true) {

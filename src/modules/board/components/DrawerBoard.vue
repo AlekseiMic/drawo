@@ -12,6 +12,8 @@ import {
   PenTool,
   Action,
   DeleteTool,
+  toolReducer,
+  removeScratch,
 } from '../../../plugins/drawer/';
 import { BoardService } from '../services/BoardService';
 import ToolBar from './drawer/ToolBar.vue';
@@ -40,7 +42,7 @@ export default {
 
     const toolPanel = shallowReactive(new ToolPanel(board));
 
-    toolPanel.addTools(LineTool, MoveTool, PenTool, DeleteTool);
+    toolPanel.add(LineTool, MoveTool, PenTool, DeleteTool);
 
     const layerPanel = shallowReactive(new LayerPanel());
 
@@ -49,7 +51,7 @@ export default {
 
     observerPanel.active = observerPanel.create(this.user.id);
 
-    board.addReducers(toolPanel.gerReducer(), observerReducer);
+    board.addReducers(toolReducer, observerReducer);
     board.toolPanel = toolPanel;
     board.layers = layerPanel;
     board.observers = observerPanel;
@@ -147,7 +149,7 @@ export default {
           this.board.clearActionHistory();
           this.boardService$.sendData(this.room, {
             actions,
-            user: this.board.user,
+            user: this.user.id,
           });
         }
       }, 100);
@@ -171,11 +173,11 @@ export default {
       this.board.toolPanel.thickness = width;
     },
     changeColor(color: string) {
-      this.board.toolPanel.colorHex = color;
+      this.board.toolPanel.color = color;
     },
     deleteScratch(id: string) {
       if (this.layerPanel.active) {
-        this.board.removeScratch(this.layerPanel.active, id);
+        this.board.dispatch(removeScratch(id, {}, this.layerPanel.active));
       }
     },
     deleteLayer(id: string) {
@@ -195,7 +197,7 @@ export default {
   <div id="board-container" ref="boardContainer"></div>
   <RightPanel
     :line-width="toolPanel.thickness"
-    :color="toolPanel.colorHex"
+    :color="toolPanel.color"
     :layers="layers"
     :scratches="layerPanel.activeScratchesRef.value"
     class="right-panel"

@@ -1,10 +1,10 @@
-import { Drawer } from "../Drawer";
-import { IScratch } from "../interfaces/IScratch";
-import { Point } from "../interfaces/Point";
-import { Pointable } from "../interfaces/Pointable";
-import { Rect } from "../interfaces/Rect";
-import { distanceToLine, line } from "../utils/line";
-import { BaseScratch } from "./BaseScratch";
+import { Drawer } from '../';
+import { IScratch } from '../interfaces/IScratch';
+import { Point } from '../interfaces/Point';
+import { Pointable } from '../interfaces/Pointable';
+import { Rect } from '../interfaces/Rect';
+import { distanceToLine, line } from '../utils/line';
+import { BaseScratch } from './BaseScratch';
 
 export class PenScratch extends BaseScratch implements IScratch, Pointable {
   points: Uint32Array = new Uint32Array();

@@ -1,5 +1,5 @@
-import { Action } from "./interfaces/Action";
-import { Rect } from "./interfaces/Rect";
+import { Action } from "../interfaces/Action";
+import { Rect } from "../interfaces/Rect";
 
 export class RedrawState {
   private _state: Record<

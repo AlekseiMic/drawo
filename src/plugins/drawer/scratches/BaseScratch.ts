@@ -1,8 +1,8 @@
-import { Drawer } from "../Drawer";
-import { Color } from "../interfaces/Color";
-import { IScratch, ScratchState } from "../interfaces/IScratch";
-import { Point } from "../interfaces/Point";
-import { Rect } from "../interfaces/Rect";
+import { Drawer } from '../';
+import { RGBA } from '../interfaces/Color';
+import { IScratch, ScratchState } from '../interfaces/IScratch';
+import { Point } from '../interfaces/Point';
+import { Rect } from '../interfaces/Rect';
 
 export abstract class BaseScratch implements IScratch {
   id: string;
@@ -17,9 +17,9 @@ export abstract class BaseScratch implements IScratch {
 
   height: number = 0;
 
-  protected _state: ScratchState | undefined;
+  protected _state: ScratchState = ScratchState.active;
 
-  protected _color: Color | undefined;
+  protected _color: RGBA | undefined;
 
   protected _rect: Rect = { left: 0, top: 0, right: 0, bottom: 0 };
 
@@ -38,7 +38,7 @@ export abstract class BaseScratch implements IScratch {
     }
   }
 
-  set color(c: undefined | Color) {
+  set color(c: undefined | RGBA) {
     if (!c) return;
     this._color = c;
   }

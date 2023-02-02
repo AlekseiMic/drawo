@@ -1,10 +1,10 @@
-import { Action } from './interfaces/Action';
-import { Manager } from './Manager';
-import { RedrawState } from './RedrawState';
+import { Action } from '../../interfaces/Action';
+import { Manager, RedrawState } from '../../';
+import { ActionType } from '../../interfaces/ActionType';
 
-export const observerReducer = (m: Manager, s: RedrawState, a: Action) => {
+export default (m: Manager, s: RedrawState, a: Action) => {
   switch (a.type) {
-    case 'moveObserver': {
+    case ActionType.MoveObserver: {
       if (!a.id) return;
       m.move(a.id, a.payload.x, a.payload.y);
       const shouldResize = m.updateDrawerRect();
