@@ -20,7 +20,7 @@ export class LineTool extends BaseCreationalTool implements ITool {
     this.start();
     this.update(e, 'startPoint');
     this.update(e, 'endPoint');
-    this.manager.dispatch(
+    this.manager.actions.dispatch(
       addScratch(this.id!, {
         ...this.getDefaultCreateOptions(),
         ...this.getPoints(),
@@ -32,7 +32,7 @@ export class LineTool extends BaseCreationalTool implements ITool {
     const layerId = this.manager.layers!.active;
     if (layerId && this.active && this.id) {
       this.update(e, 'endPoint');
-      this.manager.dispatch(
+      this.manager.actions.dispatch(
         moveScratch(this.id, { layerId, ...this.getPoints() })
       );
     }
@@ -42,7 +42,7 @@ export class LineTool extends BaseCreationalTool implements ITool {
   private mousemoveListener(e: MouseEvent) {
     if (!this.active || !this.id) return;
     this.update(e, 'endPoint');
-    this.manager.dispatch(changeScratch(this.id, this.getPoints()));
+    this.manager.actions.dispatch(changeScratch(this.id, this.getPoints()));
   }
 
   private getPoints() {

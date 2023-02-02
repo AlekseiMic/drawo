@@ -38,7 +38,9 @@ export class MoveTool extends BaseTool implements ITool {
   private hover(s: IScratch) {
     document.body.style.cursor = 'grab';
     this.hovered = s;
-    this.manager.dispatch(hoverScratch(s.id, {}, this.manager.layers!.active!));
+    this.manager.actions.dispatch(
+      hoverScratch(s.id, {}, this.manager.layers!.active!)
+    );
   }
 
   private unhover() {
@@ -46,21 +48,25 @@ export class MoveTool extends BaseTool implements ITool {
     const s = this.hovered;
     document.body.style.cursor = 'auto';
     this.hovered = null;
-    this.manager.dispatch(
+    this.manager.actions.dispatch(
       unhoverScratch(s.id, {}, this.manager.layers!.active!)
     );
   }
 
   private drag(s: IScratch) {
     this.dragged = s;
-    this.manager.dispatch(dragScratch(s.id, {}, this.manager.layers.active!));
+    this.manager.actions.dispatch(
+      dragScratch(s.id, {}, this.manager.layers.active!)
+    );
   }
 
   private drop() {
     if (!this.dragged) return;
     const s = this.dragged;
     this.dragged = null;
-    this.manager.dispatch(dropScratch(s.id, {}, this.manager.layers.active!));
+    this.manager.actions.dispatch(
+      dropScratch(s.id, {}, this.manager.layers.active!)
+    );
   }
 
   private isHovers(s: IScratch, p: Point) {
@@ -100,7 +106,7 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private dragMove(event: MouseEvent) {
-    this.manager.dispatch(
+    this.manager.actions.dispatch(
       translateScratch(this.dragged!.id, {
         move: this.getCoordChange(event),
       })
@@ -109,10 +115,10 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private dragCanvas(event: MouseEvent) {
-    const observer = this.manager.observers.active;
+    const observer = this.manager.users.active;
     if (!observer) return;
-    this.manager.dispatch(
-      moveObserver(observer.id, this.getCoordChange(event))
+    this.manager.actions.dispatch(
+      moveObserver(observer, this.getCoordChange(event))
     );
     this.updateStartCoord(event);
   }
@@ -144,7 +150,7 @@ export class MoveTool extends BaseTool implements ITool {
     const layer = this.manager.layers!.getActive();
     const activeScratchesIds = layer?.scratches ?? [];
     for (const id of activeScratchesIds) {
-      const s = layer?.getScratch(id);
+      const s = this.manager.scratches.get(id);
       if (!s || !this.isHovers(s, p)) continue;
       this.hover(s);
       break;

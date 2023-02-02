@@ -1,4 +1,4 @@
-import { Drawer } from "../entities/Drawer";
+import { DrawService } from "../services";
 import { RGBA } from "./Color";
 import { Point } from "./Point";
 import { Rect } from "./Rect";
@@ -14,7 +14,7 @@ export enum ScratchState {
 export interface IScratch {
   id: string;
 
-  state?: ScratchState;
+  state: ScratchState;
 
   color?: RGBA;
 
@@ -34,7 +34,7 @@ export interface IScratch {
 
   change(data: any): void;
 
-  draw(data: ImageData, drawer: Drawer, rect?: Rect): void;
+  draw(data: ImageData, drawer: DrawService, rect?: Rect): void;
 
   isIntersectsRect(rect: Rect): boolean;
 

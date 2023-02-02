@@ -9,22 +9,23 @@ export default (m: Manager, s: RedrawState, a: Action) => {
     case ActionType.AddScratch: {
       const scratch = ScratchFactory.create(a);
       if (!scratch) return;
-      m.layers!.layers[a.layerId].add(scratch);
+      m.scratches.add(scratch);
+      m.layers!.get(a.layerId)?.add(scratch.id);
       s.addNewScratchToDraw(a.layerId, a.id);
       break;
     }
     case ActionType.RemoveScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       if (!s.isMarked(a.layerId, a.id)) {
         s.addRectToRedraw(a.layerId, scratch.rect);
         s.markChanged(a.layerId, a.id);
       }
-      m.layers!.layers[a.layerId].remove(a.id);
+      m.layers!.get(a.layerId)?.remove(a.id);
       break;
     }
     case ActionType.TranslateScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       if (!s.isMarked(a.layerId, a.id)) {
         s.addRectToRedraw(a.layerId, scratch.rect);
@@ -34,7 +35,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       break;
     }
     case ActionType.ChangeScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       if (!s.isMarked(a.layerId, a.id)) {
         s.addRectToRedraw(a.layerId, scratch.rect);
@@ -44,50 +45,50 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       break;
     }
     case ActionType.HoverScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.hovered;
       if (a.user !== m.user) return;
-      m.layers!.layers.preview.add(scratch);
+      m.layers.get('preview')?.add(scratch.id);
       s.addNewScratchToDraw('preview', a.id);
       break;
     }
     case ActionType.UnhoverScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.active;
       if (a.user !== m.user) return;
       s.addRectToRedraw('preview', scratch.rect);
-      m.layers!.layers.preview.remove(scratch.id);
+      m.layers.get('preview')?.remove(scratch.id);
       break;
     }
     case ActionType.DragScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.dragged;
-      m.layers!.layers.preview.add(scratch);
+      m.layers.get('preview')?.add(scratch.id);
       s.addNewScratchToDraw('preview', a.id);
       s.addRectToRedraw(a.layerId, scratch.rect);
       break;
     }
     case ActionType.DropScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
+      const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.active;
       s.addRectToRedraw('preview', scratch.rect);
-      m.layers!.layers.preview.remove(scratch.id);
+      m.layers.get('preview')?.remove(scratch.id);
       s.markChanged(a.layerId, a.id);
       scratch.change(a.payload);
       break;
     }
     case ActionType.MoveScratch: {
-      const scratch = m.layers!.layers[a.layerId].getScratch(a.id);
-      if (!scratch || !m.layers!.layers[a.payload.layerId]) return;
-      s.addRectToRedraw(a.layerId, scratch.rect);
+      const scratch = m.scratches.get(a.id);
+      if (!scratch) return;
       scratch.change(a.payload);
-      m.layers!.layers[a.payload.layerId].add(scratch);
+      s.addRectToRedraw(a.layerId, scratch.rect);
       s.addNewScratchToDraw(a.payload.layerId, a.id);
-      m.layers!.layers[a.layerId].remove(scratch.id);
+      m.layers!.get(a.payload.layerId)?.add(scratch.id);
+      m.layers!.get(a.layerId)?.remove(scratch.id);
       break;
     }
     default:

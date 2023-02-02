@@ -1,14 +1,14 @@
 <script lang="ts">
-import { inject, shallowReactive, PropType } from 'vue';
+import { inject, PropType, shallowReactive } from 'vue';
 import {
   Manager,
   LineTool,
-  ToolPanel,
-  LayerPanel,
-  Observer,
+  ToolManager,
+  LayerManager,
+  User,
   MoveTool,
   observerReducer,
-  ObserverPanel,
+  UserManager,
   PenTool,
   Action,
   DeleteTool,
@@ -38,40 +38,22 @@ export default {
     };
   },
   data() {
-    const board = shallowReactive(new Manager(this.user.id));
-
-    const toolPanel = shallowReactive(new ToolPanel(board));
-
-    toolPanel.add(LineTool, MoveTool, PenTool, DeleteTool);
-
-    const layerPanel = shallowReactive(new LayerPanel());
-
-    const observerPanel = shallowReactive(new ObserverPanel());
-    observerPanel.observers = shallowReactive([]);
-
-    observerPanel.active = observerPanel.create(this.user.id);
-
-    board.addReducers(toolReducer, observerReducer);
-    board.toolPanel = toolPanel;
-    board.layers = layerPanel;
-    board.observers = observerPanel;
-
     return {
       intervalHandle: null as null | ReturnType<typeof setInterval>,
       users: { [this.user.id]: this.user.name } as Record<string, string>,
-      board,
-      toolPanel,
-      layerPanel,
-      observerPanel,
+      board: null as null | Manager,
+      toolPanel: null as null | ToolManager,
+      layerPanel: null as null | LayerManager,
+      observerPanel: null as null | UserManager,
     };
   },
   computed: {
     layers() {
       const hiddenLayers = ['preview'];
       const lockedLayers = ['main'];
-      return this.layerPanel.layersOrdered.reduce(
+      return this.layerPanel?.order.reduce(
         (acc: { id: string; removable: boolean }[], id) => {
-          const layer = this.layerPanel.layers[id];
+          const layer = this.layerPanel?.get(id);
           if (!layer || hiddenLayers.includes(id)) return acc;
           acc.push({
             id,
@@ -81,6 +63,9 @@ export default {
         },
         []
       );
+    },
+    tools() {
+      return this.toolPanel?.tools.map((t) => t.constructor.name);
     },
   },
   watch: {
@@ -95,7 +80,16 @@ export default {
   },
   mounted() {
     if (!this.$refs.boardContainer) return;
-    this.board.setContainer(this.$refs.boardContainer as HTMLDivElement);
+    this.board = shallowReactive( new Manager(
+      this.user.id,
+      this.$refs.boardContainer as HTMLDivElement
+    ));
+    this.layerPanel = this.board.layers;
+    this.toolPanel = this.board.tools;
+    this.observerPanel = this.board.users;
+
+    this.board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
+    this.board.actions.addReducer(toolReducer, observerReducer);
     this.board.init();
     this.start();
   },
@@ -104,17 +98,17 @@ export default {
   },
   methods: {
     start() {
-      this.board.start();
+      this.board?.start();
       this.subscribeToChanges();
       this.startChangesStream();
     },
     stop() {
-      this.board.stop();
+      this.board?.stop();
       this.unsubscribeFromChanges();
       this.stopChangesStream();
     },
     updatedHandler(data: { actions: Action[] }) {
-      this.board.dispatch(data.actions, false);
+      this.board?.actions.dispatch(data.actions, false);
     },
     subscribeToChanges() {
       this.boardService$.subscribe(this.updatedHandler);
@@ -129,24 +123,25 @@ export default {
     }) {
       if (action === 'join' && !this.users[user.id]) {
         this.users[user.id] = user.name;
-        this.observerPanel.create(user.id);
+        const newUser = new User(user.id);
+        this.observerPanel?.add(newUser);
       }
       if (action === 'leave') {
         delete this.users[user.id];
-        if (this.observerPanel.active?.id === user.id) {
-          const self = this.observerPanel.observers.find(
+        if (this.observerPanel?.active === user.id) {
+          const self = this.observerPanel.users.find(
             (o) => o.id === this.user.id
           );
-          this.observerPanel.active = self ?? null;
+          this.observerPanel?.setActive(self?.id);
         }
-        this.observerPanel.remove(user.id);
+        this.observerPanel?.remove(user.id);
       }
     },
     startChangesStream() {
       this.intervalHandle = setInterval(() => {
-        const actions = this.board.getActionHistory();
+        const actions = this.board?.actions.getInternalHistory() ?? [];
         if (actions.length) {
-          this.board.clearActionHistory();
+          this.board?.actions.clearInternalHistory();
           this.boardService$.sendData(this.room, {
             actions,
             user: this.user.id,
@@ -164,42 +159,44 @@ export default {
       this.boardService$.unsubscribeToUsersChanges(this.updateUsersHandler);
     },
     setTool(tool: string) {
-      this.board.toolPanel.setActive(tool);
+      this.toolPanel?.setActive(tool);
     },
-    setObserver(observer: Observer) {
-      this.board.setObserver(observer);
+    setObserver(observer: User) {
+      this.observerPanel?.setActive(observer.id);
     },
     changeWidth(width: number) {
-      this.board.toolPanel.thickness = width;
+      this.board?.settings.set('thickness', width);
     },
     changeColor(color: string) {
-      this.board.toolPanel.color = color;
+      this.board?.settings.set('color', color);
     },
     deleteScratch(id: string) {
-      if (this.layerPanel.active) {
-        this.board.dispatch(removeScratch(id, {}, this.layerPanel.active));
+      if (this.layerPanel?.active) {
+        this.board?.actions.dispatch(
+          removeScratch(id, {}, this.layerPanel.active)
+        );
       }
     },
     deleteLayer(id: string) {
-      this.board.removeLayer(id);
+      // this.board.removeLayer(id);
     },
     createLayer() {
-      this.board.createLayer();
+      // this.board.createLayer();
     },
     selectLayer(layerId: string) {
-      this.board.layers.setActive(layerId);
+      this.layerPanel?.setActive(layerId);
     },
   },
 };
 </script>
 
+<!-- :line-width="toolPanel.thickness" -->
+<!-- :color="toolPanel.color" -->
 <template>
   <div id="board-container" ref="boardContainer"></div>
   <RightPanel
-    :line-width="toolPanel.thickness"
-    :color="toolPanel.color"
     :layers="layers"
-    :scratches="layerPanel.activeScratchesRef.value"
+    :scratches="layerPanel?.order"
     class="right-panel"
     @change-width="changeWidth"
     @change-color="changeColor"
@@ -210,17 +207,17 @@ export default {
   />
   <ToolBar
     class="toolbar"
-    :tools="toolPanel.tools"
-    :active="toolPanel.active"
+    :tools="tools"
+    :active="toolPanel?.active"
     @change-tool="setTool"
   />
   <Teleport to="#header-anchor">
     <QuitButton @click="$emit('quitRoom')" />
     <ObserverBar
       class="observerbar"
-      :observers="observerPanel.observers"
+      :observers="observerPanel?.users"
       :users="users"
-      :active="observerPanel.active"
+      :active="observerPanel?.active"
       @change-observer="setObserver"
     />
     <SettingsButton />
@@ -238,7 +235,7 @@ export default {
 .right-panel {
   background: #222;
   width: 240px;
-  /* box-shadow: -3px 0px 5px 0px var(--c-default-shadow); */
+  box-shadow: -3px 0px 5px 0px var(--c-default-shadow);
 }
 
 .toolbar {

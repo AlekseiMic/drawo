@@ -59,7 +59,6 @@ export default {
       username: string;
       room: string;
     }) {
-      console.log('here');
       if (data.create) this.createRoom(data.username, data.room);
       else this.joinRoom(data.username, data.room);
     },
