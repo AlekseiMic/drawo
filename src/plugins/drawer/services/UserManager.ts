@@ -8,6 +8,10 @@ export class UserManager {
   private _callbacks: Record<'change' | 'move', ((userId?: string) => void)[]> =
     { change: [], move: [] };
 
+  clear() {
+    this.users = [];
+  }
+
   subscribeOnUserChange(cb: (typeof this._callbacks)['change'][0]) {
     this._callbacks.change.push(cb);
   }

@@ -148,7 +148,9 @@ export class MoveTool extends BaseTool implements ITool {
     if (this.hovered) this.unhover();
 
     const layer = this.manager.layers!.getActive();
-    const activeScratchesIds = layer?.scratches ?? [];
+    const activeScratchesIds = layer
+      ? this.manager.layers.getScratches(layer.id)
+      : [];
     for (const id of activeScratchesIds) {
       const s = this.manager.scratches.get(id);
       if (!s || !this.isHovers(s, p)) continue;

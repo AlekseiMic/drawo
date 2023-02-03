@@ -18,6 +18,13 @@ export class ActionManager {
 
   constructor(private manager: Manager) {}
 
+  clear() {
+    this._actions = {
+      internal: { history: [], pending: [] },
+      external: { history: [], pending: [] },
+    };
+  }
+
   public getInternalHistory() {
     return this._actions.internal.history;
   }
@@ -57,25 +64,24 @@ export class ActionManager {
 
     const actions = [...internal, ...external];
 
-    if (!actions.length) return null;
-
     const state = new RedrawState();
 
-    for (const a of actions) {
-      for (const r of this._reducers) {
-        r(this.manager, state, a);
+    if (actions.length) {
+      for (const a of actions) {
+        for (const r of this._reducers) {
+          r(this.manager, state, a);
+        }
       }
-    }
 
-    for (const [layerId, changes] of state.getChanges()) {
-      for (const scratchId of Object.keys(changes.changed)) {
-        const layer = this.manager.layers.get(layerId);
-        if (!layer?.isOnTop(scratchId)) {
-          state.addNewScratchToDraw(layerId, scratchId);
-        } else {
-          const scratch = this.manager.scratches.get(scratchId);
-          if (!scratch) continue;
-          state.addRectToRedraw(layerId, scratch.rect);
+      for (const [layerId, changes] of state.getChanges()) {
+        for (const scratchId of Object.keys(changes.changed)) {
+          if (!this.manager.layers.isScratchOnTop(layerId, scratchId)) {
+            state.addNewScratchToDraw(layerId, scratchId);
+          } else {
+            const scratch = this.manager.scratches.get(scratchId);
+            if (!scratch) continue;
+            state.addRectToRedraw(layerId, scratch.rect);
+          }
         }
       }
     }

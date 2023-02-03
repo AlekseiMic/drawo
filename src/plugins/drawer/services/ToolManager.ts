@@ -9,13 +9,11 @@ export class ToolManager {
 
   constructor(private manager: Manager) {}
 
-  setActive(name: string) {
+  setActive(name?: string) {
     const tool = this.findByName(name);
-    if (tool) {
-      this.getActive()?.disable();
-      this.active = name;
-      tool.activate();
-    }
+    this.getActive()?.disable();
+    this.active = name;
+    if (tool) tool.activate();
   }
 
   getActive() {
@@ -31,7 +29,7 @@ export class ToolManager {
     });
   }
 
-  findByName(name: string) {
+  findByName(name?: string) {
     return this.tools.find((t) => t.constructor.name === name);
   }
 }

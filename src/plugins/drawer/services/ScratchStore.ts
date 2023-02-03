@@ -3,6 +3,10 @@ import { IScratch } from '../interfaces';
 export class ScratchStore {
   private _scratches: Record<string, IScratch> = {};
 
+  clear() {
+    this._scratches = {};
+  }
+
   get(id: string) {
     return this._scratches[id];
   }

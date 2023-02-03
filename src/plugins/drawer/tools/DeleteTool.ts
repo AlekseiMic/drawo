@@ -59,7 +59,11 @@ export class DeleteTool extends BaseTool implements ITool {
     if (this.hovered) this.unhover();
 
     const layer = this.manager.layers!.getActive();
-    const activeScratchesIds = layer?.scratches ?? [];
+
+    const activeScratchesIds = layer
+      ? this.manager.layers.getScratches(layer.id)
+      : [];
+
     for (const id of activeScratchesIds) {
       const s = this.manager.scratches.get(id);
       if (!s || !this.isHovers(s, p)) continue;
@@ -72,7 +76,9 @@ export class DeleteTool extends BaseTool implements ITool {
     if (!this.hovered) return;
     const s = this.hovered;
     this.unhover();
-    this.manager.actions.dispatch(removeScratch(s.id, {}, this.manager.layers.active!));
+    this.manager.actions.dispatch(
+      removeScratch(s.id, {}, this.manager.layers.active!)
+    );
   }
 
   protected applyListeners(): void {

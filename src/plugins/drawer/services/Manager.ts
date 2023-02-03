@@ -7,7 +7,7 @@ import { UserManager } from './UserManager';
 import { ToolManager } from './ToolManager';
 import { ScratchStore } from './ScratchStore';
 import { ActionManager } from './ActionManager';
-import { Layer, User } from '../entities';
+import { BaseRedrawState, Layer, User } from '../entities';
 import { RefreshService } from './RefreshService';
 import { DrawService } from './DrawService';
 import { SettingsStore } from './SettingsStore';
@@ -29,6 +29,8 @@ export class Manager {
   // Current user
   public user: string;
 
+  //
+  //
   // All who can draw
   public users: UserManager;
 
@@ -42,18 +44,20 @@ export class Manager {
 
   public settings = new SettingsStore();
 
+  //
+  //
+  //
   private _refresh = new RefreshService();
 
-  private _drawer = new CanvasManager();
+  private _canvases = new CanvasManager();
 
   private _drawService: DrawService;
 
-  private _container: HTMLDivElement;
+  private _container?: HTMLDivElement;
 
   constructor(
     user: string,
-    container: HTMLDivElement,
-    options?: { components?: typeof defaultComponents }
+    options?: { components?: Partial<typeof defaultComponents> }
   ) {
     this.user = user;
 
@@ -64,10 +68,7 @@ export class Manager {
     this.onLayerAdd = this.onLayerAdd.bind(this);
     this.onLayerRemove = this.onLayerRemove.bind(this);
 
-    this._container = container;
-    this._drawer.setContainer(container);
-
-    this._drawService = new DrawService(this._drawer, this.settings);
+    this._drawService = new DrawService(this._canvases, this.settings);
 
     const components = { ...defaultComponents, ...options?.components };
 
@@ -75,45 +76,40 @@ export class Manager {
     this.tools = new components.tools(this);
     this.layers = new components.layers();
     this.scratches = new components.scratches();
+
+    this.layers.subscribeOnLayerAdd(this.onLayerAdd);
+    this.layers.subscribeOnLayerRemove(this.onLayerRemove);
+
+    this.users.subscribeOnUserChange(this.onUserChange);
+    this.users.subscribeOnUserMove(this.onUserMove);
+    // requestAnimationFrame
+    this._refresh.setUpdateCallback(this.update);
+  }
+
+  clear() {
+    this.users.clear();
+    this.layers.clear();
+    this.scratches.clear();
+    this.actions.clear();
+    this._canvases.clear();
+    this.tools.setActive(undefined);
+    this.stop();
   }
 
   init() {
+    if (!this._container) return;
     this.onResize();
-    this._drawer.updateRect(this.rect);
+    this._canvases.updateRect(this.rect);
+    this.clear();
 
     // layers settings
-    this.layers.subscribeOnLayerAdd(this.onLayerAdd);
-    this.layers.subscribeOnLayerRemove(this.onLayerRemove);
     this.layers.add(new Layer(100000, 'preview'));
     this.layers.add(new Layer(1, 'main'));
     this.layers.setActive('main');
 
     // user settings
-    this.users.subscribeOnUserChange(this.onUserChange);
-    this.users.subscribeOnUserMove(this.onUserMove);
     this.users.add(new User(this.user));
     this.users.setActive(this.user);
-
-    // requestAnimationFrame
-    this._refresh.setUpdateCallback(this.update);
-  }
-
-  private onUserMove(userId?: string) {
-    if (this.users.active === userId) this.onResize();
-  }
-
-  private onLayerAdd(layerId: string) {
-    const layer = this.layers.get(layerId);
-    if (!layer) return;
-    this._drawer.add(layer.id, layer.zIndex);
-  }
-
-  private onLayerRemove(layerId: string) {
-    this._drawer.remove(layerId);
-  }
-
-  private onUserChange() {
-    this.onResize();
   }
 
   start() {
@@ -126,82 +122,103 @@ export class Manager {
     this._refresh.stop();
   }
 
+  setContainer(container: HTMLDivElement) {
+    this._container = container;
+    this._canvases.setContainer(container);
+  }
+
+  private onUserMove(userId?: string) {
+    if (this.users.active === userId) {
+      this.onResize();
+    }
+  }
+
+  private onLayerAdd(layerId: string) {
+    const layer = this.layers.get(layerId);
+    if (layer) {
+      this._canvases.add(layer.id, layer.zIndex);
+    }
+  }
+
+  private onLayerRemove(layerId: string) {
+    this._canvases.remove(layerId);
+  }
+
+  private onUserChange() {
+    this.onResize();
+  }
+
   update() {
     const state = this.actions.getPendingUpdates();
-    const resized = this._drawer.updateRect(this.rect);
-
-    if (!state && !resized) return;
-
-    const diff = resized
-      ? this.layers.order.map((l) => {
-          return [
-            l,
-            { resize: true, isFull: true, redraw: [], changed: {}, add: [] },
-          ] as const;
-        })
-      : state!.getChanges();
+    const shouldResize = this._canvases.updateRect(this.rect);
+    const diff = state.getChanges(shouldResize, this.layers.order);
 
     for (const [layerId, changes] of diff) {
       const layer = this.layers.get(layerId);
-      if (!layer) return; // probably should remove layer or smth
-      const scratches = layer.scratches;
-      const isFull = changes.isFull || changes.resize;
+      if (layer) {
+        const isResize = shouldResize || changes.resize;
+        const isFull = changes.isFull || isResize;
+        this.drawLayer(layer, changes, isFull, isResize);
+      }
+    }
+  }
 
-      this._drawer.draw(layerId, isFull, (canvasManager, imageData, rect) => {
-        const rects = isFull ? [rect] : changes.redraw;
-        if (changes.resize) canvasManager.resize(layerId);
+  private drawLayer(
+    layer: Layer,
+    changes: BaseRedrawState,
+    isFull: boolean,
+    resized: boolean
+  ) {
+    this._canvases.draw(layer.id, isFull, (cm, data) => {
+      const rects = isFull ? [cm.rect] : changes.redraw;
+      if (resized) cm.resize(layer.id);
 
-        // somehow rects should collapse if they on each other so we dont go through same scratches twice
-        // mb check percentage of one rect taking place in another rect
-        for (const rect of rects) {
-          if (!changes.resize) this._drawService.clear(imageData, rect);
+      for (const rect of rects) {
+        if (!resized) this._drawService.clear(data, rect);
+        this.drawScratches(
+          this.layers.getScratches(layer.id),
+          layer.id,
+          data,
+          rect
+        );
+      }
 
-          for (const scratchId of scratches) {
-            const scratch = this.scratches.get(scratchId);
-            if (
-              !scratch ||
-              (layerId !== 'preview' && scratch.state !== ScratchState.active)
-            )
-              continue;
-            if (!scratch.isIntersectsRect(rect)) continue;
-            scratch.draw(imageData, this._drawService, rect);
-          }
-        }
+      if (!isFull) {
+        this.drawScratches(changes.add, layer.id, data, cm.rect);
+      }
 
-        for (const scratchId of changes.add) {
-          const scratch = this.scratches.get(scratchId);
-          if (
-            !scratch ||
-            (layerId !== 'preview' && scratch.state !== ScratchState.active)
-          )
-            continue;
-          if (!scratch.isIntersectsRect(rect)) continue;
-          scratch.draw(imageData, this._drawService);
-        }
+      return data;
+    });
+  }
 
-        return imageData;
-      });
+  private drawScratches(
+    ids: string[],
+    layer: string,
+    imageData: ImageData,
+    rect: Rect
+  ) {
+    for (const id of ids) {
+      const scratch = this.scratches.get(id);
+      const hide = layer !== 'preview' && scratch.state !== ScratchState.active;
+      if (!scratch || hide || !scratch.isIntersectsRect(rect)) continue;
+      scratch.draw(imageData, this._drawService, rect);
     }
   }
 
   private onResize() {
     if (!this._container) return;
-    const width = this._container.clientWidth;
-    const height = this._container.clientHeight;
-
-    this.offset = this._container.getBoundingClientRect();
-
-    this.rect.right = this.rect.left + width;
-    this.rect.bottom = this.rect.top + height;
+    const { x, y, height, width } = this._container.getBoundingClientRect();
+    this.offset = { x, y };
 
     const activeUser = this.users.getActive();
     if (activeUser) {
       const center = activeUser.center;
       this.rect.left = center.x - Math.floor(width / 2);
-      this.rect.right = this.rect.left + width;
       this.rect.top = center.y - Math.floor(height / 2);
-      this.rect.bottom = this.rect.top + height;
     }
+
+    this.rect.right = this.rect.left + width;
+    this.rect.bottom = this.rect.top + height;
   }
 
   private listenResize() {

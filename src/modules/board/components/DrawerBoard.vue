@@ -1,5 +1,5 @@
 <script lang="ts">
-import { inject, PropType, shallowReactive } from 'vue';
+import { inject, PropType, reactive, shallowReactive } from 'vue';
 import {
   Manager,
   LineTool,
@@ -14,6 +14,7 @@ import {
   DeleteTool,
   toolReducer,
   removeScratch,
+  Layer,
 } from '../../../plugins/drawer/';
 import { BoardService } from '../services/BoardService';
 import ToolBar from './drawer/ToolBar.vue';
@@ -32,19 +33,23 @@ export default {
     },
   },
   emits: ['quitRoom'],
-  setup() {
+  setup(props) {
+    const board = new Manager(props.user.id);
+    board.tools = shallowReactive(board.tools);
+    board.layers = reactive(board.layers) as LayerManager;
+    board.users = reactive(board.users) as UserManager;
+
+    board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
+    board.actions.addReducer(toolReducer, observerReducer);
+
     return {
       boardService$: inject('boardService') as BoardService,
-    };
-  },
-  data() {
-    return {
       intervalHandle: null as null | ReturnType<typeof setInterval>,
-      users: { [this.user.id]: this.user.name } as Record<string, string>,
-      board: null as null | Manager,
-      toolPanel: null as null | ToolManager,
-      layerPanel: null as null | LayerManager,
-      observerPanel: null as null | UserManager,
+      users: reactive({}) as Record<string, string>,
+      board,
+      toolPanel: board.tools,
+      layerPanel: board.layers,
+      observerPanel: board.users,
     };
   },
   computed: {
@@ -64,6 +69,11 @@ export default {
         []
       );
     },
+    activeLayerScratches() {
+      const active = this.layerPanel?.active;
+      if (!active) return [];
+      return this.layerPanel?.getScratches(active) ?? [];
+    },
     tools() {
       return this.toolPanel?.tools.map((t) => t.constructor.name);
     },
@@ -74,22 +84,15 @@ export default {
       immediate: true,
     },
     user: {
-      handler(next, current) {},
+      handler(next, current) {
+        this.users[current?.id ?? next.id] = next.name;
+      },
       immediate: true,
     },
   },
   mounted() {
     if (!this.$refs.boardContainer) return;
-    this.board = shallowReactive( new Manager(
-      this.user.id,
-      this.$refs.boardContainer as HTMLDivElement
-    ));
-    this.layerPanel = this.board.layers;
-    this.toolPanel = this.board.tools;
-    this.observerPanel = this.board.users;
-
-    this.board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
-    this.board.actions.addReducer(toolReducer, observerReducer);
+    this.board.setContainer(this.$refs.boardContainer as HTMLDivElement);
     this.board.init();
     this.start();
   },
@@ -178,10 +181,11 @@ export default {
       }
     },
     deleteLayer(id: string) {
-      // this.board.removeLayer(id);
+      this.layerPanel?.remove(id);
     },
     createLayer() {
-      // this.board.createLayer();
+      const layer = new Layer((this.layerPanel?.getMaxZIndex() ?? 0) + 1);
+      this.layerPanel?.add(layer);
     },
     selectLayer(layerId: string) {
       this.layerPanel?.setActive(layerId);
@@ -196,7 +200,7 @@ export default {
   <div id="board-container" ref="boardContainer"></div>
   <RightPanel
     :layers="layers"
-    :scratches="layerPanel?.order"
+    :scratches="activeLayerScratches"
     class="right-panel"
     @change-width="changeWidth"
     @change-color="changeColor"

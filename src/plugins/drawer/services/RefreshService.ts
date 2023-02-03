@@ -25,7 +25,7 @@ export class RefreshService {
   private update(ts: number) {
     if (!this.isRunning || !this._callback) return;
     window.requestAnimationFrame(this.update);
-    if (ts - this._prevTS < 5) return;
+    // if (ts - this._prevTS < ) return;
     this._prevTS = ts;
     this._callback();
   }
