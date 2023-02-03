@@ -13,6 +13,11 @@ export class CanvasManager {
     this._container = container;
   }
 
+  clear() {
+    Object.keys(this._canvases).forEach((id) => this.remove(id));
+    this._canvases = {};
+  }
+
   public draw(
     layerId: string,
     clear: boolean,

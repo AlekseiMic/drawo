@@ -5,10 +5,19 @@ export class LayerManager {
 
   public order: string[] = [];
 
-  private layers: Record<string, Layer> = {};
+  protected layers: Record<string, Layer> = {};
 
-  private _callbacks: Record<'add' | 'remove', ((layerId: string) => void)[]> =
-    { add: [], remove: [] };
+  protected scratchesPerLayer: Record<string, string[]> = {};
+
+  protected _callbacks: Record<
+    'add' | 'remove',
+    ((layerId: string) => void)[]
+  > = { add: [], remove: [] };
+
+  clear() {
+    this.layers = {};
+    this.order = [];
+  }
 
   subscribeOnLayerAdd(cb: (typeof this._callbacks)['add'][0]) {
     this._callbacks.add.push(cb);
@@ -41,6 +50,10 @@ export class LayerManager {
     this._callbacks.add.forEach((cb) => cb(layer.id));
   }
 
+  getMaxZIndex() {
+    return this.get(this.order[1])?.zIndex || 0;
+  }
+
   getActive() {
     if (!this.active) return undefined;
     return this.get(this.active);
@@ -53,8 +66,9 @@ export class LayerManager {
   remove(layerId: string) {
     if (layerId === 'preview') return;
 
-    const index = this.order.findIndex((l) => l === this.active);
-    this.order.splice(index);
+    const index = this.order.findIndex((l) => l === layerId);
+    if (index === -1) return;
+    this.order.splice(index, 1);
     delete this.layers[layerId];
     this._callbacks.remove.forEach((cb) => cb(layerId));
 
@@ -68,5 +82,26 @@ export class LayerManager {
     this.order = Object.values(this.layers)
       .sort((l1, l2) => l2.zIndex - l1.zIndex)
       .map((layer) => layer.id);
+  }
+
+  getScratches(layerId: string) {
+    return this.scratchesPerLayer[layerId] ?? [];
+  }
+
+  addScratch(layerId: string, scratchId: string) {
+    if (!this.scratchesPerLayer[layerId]) {
+      this.scratchesPerLayer[layerId] = [];
+    }
+    this.scratchesPerLayer[layerId]?.push(scratchId);
+  }
+
+  removeScratch(layerId: string, scratchId: string) {
+    this.scratchesPerLayer[layerId] = this.scratchesPerLayer[layerId].filter(
+      (s) => s !== scratchId
+    );
+  }
+  isScratchOnTop(layerId: string, scratchId: string) {
+    const countInLayer = this.scratchesPerLayer[layerId]?.length ?? 0;
+    return this.scratchesPerLayer[layerId]?.[countInLayer - 1] !== scratchId;
   }
 }

@@ -10,7 +10,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       const scratch = ScratchFactory.create(a);
       if (!scratch) return;
       m.scratches.add(scratch);
-      m.layers!.get(a.layerId)?.add(scratch.id);
+      m.layers!.addScratch(a.layerId, scratch.id);
       s.addNewScratchToDraw(a.layerId, a.id);
       break;
     }
@@ -21,7 +21,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
         s.addRectToRedraw(a.layerId, scratch.rect);
         s.markChanged(a.layerId, a.id);
       }
-      m.layers!.get(a.layerId)?.remove(a.id);
+      m.layers!.removeScratch(a.layerId, scratch.id);
       break;
     }
     case ActionType.TranslateScratch: {
@@ -49,7 +49,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       if (!scratch) return;
       scratch.state = ScratchState.hovered;
       if (a.user !== m.user) return;
-      m.layers.get('preview')?.add(scratch.id);
+      m.layers!.addScratch('preview', scratch.id);
       s.addNewScratchToDraw('preview', a.id);
       break;
     }
@@ -59,14 +59,14 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       scratch.state = ScratchState.active;
       if (a.user !== m.user) return;
       s.addRectToRedraw('preview', scratch.rect);
-      m.layers.get('preview')?.remove(scratch.id);
+      m.layers!.removeScratch('preview', scratch.id);
       break;
     }
     case ActionType.DragScratch: {
       const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.dragged;
-      m.layers.get('preview')?.add(scratch.id);
+      m.layers!.addScratch('preview', scratch.id);
       s.addNewScratchToDraw('preview', a.id);
       s.addRectToRedraw(a.layerId, scratch.rect);
       break;
@@ -76,7 +76,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       if (!scratch) return;
       scratch.state = ScratchState.active;
       s.addRectToRedraw('preview', scratch.rect);
-      m.layers.get('preview')?.remove(scratch.id);
+      m.layers!.removeScratch('preview', scratch.id);
       s.markChanged(a.layerId, a.id);
       scratch.change(a.payload);
       break;
@@ -87,8 +87,8 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       scratch.change(a.payload);
       s.addRectToRedraw(a.layerId, scratch.rect);
       s.addNewScratchToDraw(a.payload.layerId, a.id);
-      m.layers!.get(a.payload.layerId)?.add(scratch.id);
-      m.layers!.get(a.layerId)?.remove(scratch.id);
+      m.layers!.addScratch(a.payload.layerId, scratch.id);
+      m.layers!.removeScratch(a.layerId, scratch.id);
       break;
     }
     default:

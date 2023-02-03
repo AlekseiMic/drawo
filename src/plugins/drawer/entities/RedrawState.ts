@@ -1,23 +1,33 @@
 import { Action } from '../interfaces/Action';
 import { Rect } from '../interfaces/Rect';
 
+export type BaseRedrawState = {
+  changed: Record<string, boolean>;
+  isFull: boolean;
+  redraw: Rect[];
+  add: string[];
+  resize: boolean;
+};
+
 export class RedrawState {
-  private _state: Record<
-    string,
-    {
-      changed: Record<string, boolean>;
-      isFull: boolean;
-      redraw: Rect[];
-      add: string[];
-      resize: boolean;
-    }
-  > = {};
+  private _state: Record<string, BaseRedrawState> = {};
 
   static filter(actions: Action[]) {
     return actions;
   }
 
-  getChanges() {
+  public getChanges(
+    full: boolean = false,
+    layers?: string[]
+  ): [string, BaseRedrawState][] {
+    if (full && layers) {
+      return layers.map((l) => {
+        return [
+          l,
+          { resize: true, isFull: true, redraw: [], changed: {}, add: [] },
+        ];
+      });
+    }
     return Object.entries(this._state);
   }
 

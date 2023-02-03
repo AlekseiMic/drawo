@@ -15,12 +15,13 @@ export class Layer {
     this.scratches = this.scratches.filter((s) => s !== scratchId);
   }
 
+  public isOnTop(id: string) {
+    return this.scratches[this.scratches.length - 1] !== id;
+  }
+
   public constructor(z: number, id?: string) {
     this.id = id ?? nanoid();
     this.zIndex = z;
   }
 
-  public isOnTop(id: string) {
-    return this.scratches[this.scratches.length - 1] !== id;
-  }
 }
