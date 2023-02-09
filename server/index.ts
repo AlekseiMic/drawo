@@ -1,7 +1,13 @@
 import { Server } from 'socket.io';
 import { nanoid } from 'nanoid';
+import { Manager } from '../src/plugins/drawer/';
+// @ts-ignore
+import { ServerManager } from './ServerManager.js';
 
-const rooms: Record<string, { users: { name: string; id: string }[] }> = {};
+const rooms: Record<
+  string,
+  { board: Manager; users: { name: string; id: string }[] }
+> = {};
 const deleteList: { room: string; ts: ReturnType<typeof Date.now> }[] = [];
 
 function addToDeleteList(room: string) {
@@ -19,19 +25,20 @@ io.on('connection', (socket) => {
   socket.on(
     'join',
     async (
-      { id, room, name }: { room: string; name: string; id?: string },
+      { id, room: roomId, name }: { room: string; name: string; id?: string },
       callback
     ) => {
-      if (!(room in rooms)) return callback({ status: 'failure' });
+      const room = rooms[roomId];
+      if (!room) return callback({ status: 'failure' });
 
-      let user = rooms[room].users.find((u) => u.id === id);
+      let user = room.users.find((u) => u.id === id);
 
       if (!user) {
         user = { id: id ?? nanoid(15), name };
-        rooms[room].users.push(user);
+        room.users.push(user);
       }
-      socket.join(room);
-      socket.to(room).emit('user-changes', {
+      socket.join(roomId);
+      socket.to(roomId).emit('user-changes', {
         action: 'join',
         user: { ...user, ts: Date.now() },
       });
@@ -56,18 +63,29 @@ io.on('connection', (socket) => {
         } while (room in rooms);
       }
 
-      rooms[room] = { users: [user] };
+      rooms[room] = { users: [user], board: new ServerManager() };
       callback({ status: 'success', room, id: user.id });
     }
   );
 
+  socket.on('loadData', ({ room: roomId }: { room: string }, callback) => {
+    const room = rooms[roomId];
+    if (!room) callback(false);
+    else callback(room.board.serialize());
+  });
+
   socket.on(
     'sendData',
     (
-      { room, data }: { room: string; data: { actions: any[]; user: string } },
+      {
+        room: roomId,
+        data,
+      }: { room: string; data: { actions: any[]; user: string } },
       callback
     ) => {
-      socket.to(room).emit('sendData', data);
+      socket.to(roomId).emit('sendData', data);
+      const room = rooms[roomId];
+      room.board.actions.dispatch(data.actions);
       callback(true);
     }
   );

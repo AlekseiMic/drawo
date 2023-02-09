@@ -8,8 +8,20 @@ export class UserManager {
   private _callbacks: Record<'change' | 'move', ((userId?: string) => void)[]> =
     { change: [], move: [] };
 
+  serialize() {
+    return this.users;
+  }
+
+  deserialize(data: any) {
+    this.users =
+      data?.map((u: User) => {
+        return new User(u.id, u.name, u.isObserver, u.center);
+      }) ?? [];
+  }
+
   clear() {
     this.users = [];
+    this._callbacks = { change: [], move: [] };
   }
 
   subscribeOnUserChange(cb: (typeof this._callbacks)['change'][0]) {

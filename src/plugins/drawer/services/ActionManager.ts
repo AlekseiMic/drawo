@@ -9,14 +9,26 @@ type Actions = {
 };
 
 export class ActionManager {
-  private _actions: Record<'internal' | 'external', Actions> = {
+  protected _actions: Record<'internal' | 'external', Actions> = {
     internal: { history: [], pending: [] },
     external: { history: [], pending: [] },
   };
 
-  private _reducers: Reducer[] = [];
+  protected _reducers: Reducer[] = [];
 
-  constructor(private manager: Manager) {}
+  constructor(protected manager: Manager) {}
+
+  serialize() {
+    return {
+      internal: this._actions.internal.pending,
+      external: this._actions.external.pending,
+    };
+  }
+
+  deserialize(data: any) {
+    this._actions.external.pending = data?.external ?? [];
+    this._actions.internal.pending = data?.internal ?? [];
+  }
 
   clear() {
     this._actions = {
@@ -40,7 +52,7 @@ export class ActionManager {
       arr = this._actions.internal;
       actions = actions.map((a) => {
         a.timestamp = Date.now();
-        a.user = this.manager.user;
+        a.user = this.manager.user.id;
         return a;
       });
     }

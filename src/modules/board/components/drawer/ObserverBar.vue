@@ -10,10 +10,6 @@ export default {
       type: Array as PropType<User[]>,
       default: () => [],
     },
-    users: {
-      type: Object as PropType<Record<string, string>>,
-      required: true,
-    },
     active: {
       type: String as PropType<string | null>,
       default: () => null,
@@ -28,7 +24,7 @@ export default {
     <IconButton
       v-for="observer in observers"
       :key="observer.id"
-      :title="users[observer.id]"
+      :title="observer.name"
       :class="{
         observer: true,
         active: active === observer.id,
@@ -36,8 +32,7 @@ export default {
       @click="$emit('changeObserver', observer)"
     >
       <span :title="observer.id">
-      {{ observer.id }}
-        <!-- {{ users[observer.id].slice(0, 2).toUpperCase() }} -->
+        {{ observer.name.slice(0, 2).toUpperCase() }}
       </span>
     </IconButton>
   </div>

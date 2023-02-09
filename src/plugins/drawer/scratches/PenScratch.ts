@@ -18,12 +18,31 @@ export class PenScratch extends BaseScratch implements IScratch, Pointable {
     this.color = data.color;
     this.thickness = data.thickness ?? this.thickness;
     if (data.point) this.addPoint(data.point);
+    if (data.points) {
+      this._points = data.points;
+      this._rPoints = [];
+      this.isReady = false;
+    }
   }
 
   static create(id: string, user: string, data: any) {
     const line = new PenScratch(user, id);
     line.change(data);
     return line;
+  }
+
+  serialize() {
+    return {
+      name: this.constructor.name,
+      id: this.id,
+      user: this.user,
+      payload: {
+        color: this.color,
+        state: this.state,
+        thickness: this.thickness,
+        points: this._points,
+      },
+    };
   }
 
   updateRect() {

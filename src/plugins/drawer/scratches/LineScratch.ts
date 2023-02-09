@@ -17,6 +17,8 @@ export class LineScratch extends BaseScratch implements IScratch, Pointable {
 
   private _rEnd: Point = { x: 0, y: 0 };
 
+  serialize() {}
+
   set start(p: undefined | Point) {
     if (!p) return;
     if (this._start.x !== p.x || this._start.y !== p.y) {

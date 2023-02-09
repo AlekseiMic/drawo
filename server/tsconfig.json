@@ -16,5 +16,7 @@
     "skipLibCheck": true
   },
   "baseDir": ".",
-  "rootDir": "."
+  "rootDir": ".",
+
+  "include": ["./**/*", "../src/plugins/**/*"]
 }

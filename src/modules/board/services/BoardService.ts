@@ -30,6 +30,12 @@ export class BoardService {
     this.socket.disconnect();
   }
 
+  loadData(room: string) {
+    return new Promise<JoinResponse>((r) => {
+      this.socket.send<{ room: string }, any>('loadData', { room }, r);
+    });
+  }
+
   sendData(
     room: string | undefined,
     data: { actions: Action[]; user: string }

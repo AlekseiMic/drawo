@@ -29,6 +29,12 @@ export class SettingsStore {
     },
   };
 
+  serialize() {
+    return {};
+  }
+
+  deserialize(data: any) {}
+
   set<T extends keyof SettingsProps>(name: T, value: SettingsProps[T]) {
     this._settings[name] = value;
   }

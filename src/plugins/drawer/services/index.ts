@@ -4,3 +4,4 @@ export * from './Manager';
 export * from './UserManager';
 export * from './ToolManager';
 export * from './DrawService';
+export * from './ActionManager';

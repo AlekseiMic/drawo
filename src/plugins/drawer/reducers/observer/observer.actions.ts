@@ -6,3 +6,14 @@ export const moveObserver = (id: string, payload: {}) => ({
   payload,
 });
 
+export const addObserver = (id: string, payload: {}) => ({
+  type: ActionType.AddObserver,
+  id,
+  payload,
+});
+
+export const removeObserver = (id: string, payload: {}) => ({
+  type: ActionType.RemoveObserver,
+  id,
+  payload,
+});

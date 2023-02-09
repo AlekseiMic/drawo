@@ -48,7 +48,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.hovered;
-      if (a.user !== m.user) return;
+      if (a.user !== m.user.id) return;
       m.layers!.addScratch('preview', scratch.id);
       s.addNewScratchToDraw('preview', a.id);
       break;
@@ -57,7 +57,7 @@ export default (m: Manager, s: RedrawState, a: Action) => {
       const scratch = m.scratches.get(a.id);
       if (!scratch) return;
       scratch.state = ScratchState.active;
-      if (a.user !== m.user) return;
+      if (a.user !== m.user.id) return;
       s.addRectToRedraw('preview', scratch.rect);
       m.layers!.removeScratch('preview', scratch.id);
       break;

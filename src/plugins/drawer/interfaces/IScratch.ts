@@ -1,14 +1,14 @@
-import { DrawService } from "../services";
-import { RGBA } from "./Color";
-import { Point } from "./Point";
-import { Rect } from "./Rect";
+import { DrawService } from '../services';
+import { RGBA } from './Color';
+import { Point } from './Point';
+import { Rect } from './Rect';
 
 export enum ScratchState {
-  "hidden" = 0,
-  "active" = 1,
-  "hovered" = 3,
-  "preview" = 4,
-  "dragged" = 5,
+  'hidden' = 0,
+  'active' = 1,
+  'hovered' = 3,
+  'preview' = 4,
+  'dragged' = 5,
 }
 
 export interface IScratch {
@@ -33,6 +33,8 @@ export interface IScratch {
   prepare(): void;
 
   change(data: any): void;
+
+  serialize(): any;
 
   draw(data: ImageData, drawer: DrawService, rect?: Rect): void;
 
