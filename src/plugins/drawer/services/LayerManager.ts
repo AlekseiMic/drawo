@@ -14,9 +14,27 @@ export class LayerManager {
     ((layerId: string) => void)[]
   > = { add: [], remove: [] };
 
+  serialize() {
+    return {
+      layers: this.layers,
+      scratchesPerLayer: this.scratchesPerLayer,
+    };
+  }
+
+  deserialize(data?: {
+    layers?: Record<string, Layer>;
+    scratchesPerLayer?: Record<string, string[]>;
+  }) {
+    Object.values(data?.layers ?? {}).forEach((l: Layer) => {
+      this.add(l);
+    });
+    this.scratchesPerLayer = data?.scratchesPerLayer ?? {};
+  }
+
   clear() {
     this.layers = {};
     this.order = [];
+    this._callbacks = { add: [], remove: [] };
   }
 
   subscribeOnLayerAdd(cb: (typeof this._callbacks)['add'][0]) {

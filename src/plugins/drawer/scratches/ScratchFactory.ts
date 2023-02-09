@@ -15,4 +15,14 @@ export class ScratchFactory {
         return null;
     }
   }
+
+  static unserialize(s: any) {
+    if (s.name === 'PenScratch') {
+      return PenScratch.create(s.id, s.user, s.payload);
+    }
+    if (s.name === 'LineScratch') {
+      return LineScratch.create(s.id, s.user, s.payload);
+    }
+    return null;
+  }
 }

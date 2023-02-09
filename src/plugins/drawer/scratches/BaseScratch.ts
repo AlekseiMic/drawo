@@ -29,6 +29,8 @@ export abstract class BaseScratch implements IScratch {
 
   abstract change(data: any): void;
 
+  abstract serialize(): any;
+
   abstract draw(
     data: ImageData,
     drawer: DrawService,

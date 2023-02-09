@@ -7,7 +7,7 @@ import { UserManager } from './UserManager';
 import { ToolManager } from './ToolManager';
 import { ScratchStore } from './ScratchStore';
 import { ActionManager } from './ActionManager';
-import { BaseRedrawState, Layer, User } from '../entities';
+import { BaseRedrawState, Layer } from '../entities';
 import { RefreshService } from './RefreshService';
 import { DrawService } from './DrawService';
 import { SettingsStore } from './SettingsStore';
@@ -17,6 +17,7 @@ const defaultComponents = {
   tools: ToolManager,
   layers: LayerManager,
   scratches: ScratchStore,
+  actions: ActionManager,
 };
 
 export class Manager {
@@ -27,11 +28,11 @@ export class Manager {
   public offset: Point = { x: 0, y: 0 };
 
   // Current user
-  public user: string;
+  public user: { id: string; name: string };
 
   //
   //
-  // All who can draw
+  //
   public users: UserManager;
 
   public tools: ToolManager;
@@ -40,7 +41,7 @@ export class Manager {
 
   public scratches: ScratchStore;
 
-  public actions = new ActionManager(this);
+  public actions: ActionManager;
 
   public settings = new SettingsStore();
 
@@ -55,8 +56,26 @@ export class Manager {
 
   private _container?: HTMLDivElement;
 
+  serialize() {
+    return {
+      users: this.users.serialize(),
+      layers: this.layers.serialize(),
+      scratches: this.scratches.serialize(),
+      actions: this.actions.serialize(),
+      settigns: this.settings.serialize(),
+    };
+  }
+
+  deserialize(data: any) {
+    this.users.deserialize(data.users);
+    this.layers.deserialize(data.layers);
+    this.scratches.deserialize(data.scratches);
+    this.actions.deserialize(data.actions);
+    this.settings.deserialize(data.settings);
+  }
+
   constructor(
-    user: string,
+    user: { id: string; name: string },
     options?: { components?: Partial<typeof defaultComponents> }
   ) {
     this.user = user;
@@ -76,14 +95,7 @@ export class Manager {
     this.tools = new components.tools(this);
     this.layers = new components.layers();
     this.scratches = new components.scratches();
-
-    this.layers.subscribeOnLayerAdd(this.onLayerAdd);
-    this.layers.subscribeOnLayerRemove(this.onLayerRemove);
-
-    this.users.subscribeOnUserChange(this.onUserChange);
-    this.users.subscribeOnUserMove(this.onUserMove);
-    // requestAnimationFrame
-    this._refresh.setUpdateCallback(this.update);
+    this.actions = new components.actions(this);
   }
 
   clear() {
@@ -93,23 +105,20 @@ export class Manager {
     this.actions.clear();
     this._canvases.clear();
     this.tools.setActive(undefined);
-    this.stop();
   }
 
   init() {
     if (!this._container) return;
+
     this.onResize();
     this._canvases.updateRect(this.rect);
     this.clear();
 
-    // layers settings
-    this.layers.add(new Layer(100000, 'preview'));
-    this.layers.add(new Layer(1, 'main'));
-    this.layers.setActive('main');
-
-    // user settings
-    this.users.add(new User(this.user));
-    this.users.setActive(this.user);
+    this.layers.subscribeOnLayerAdd(this.onLayerAdd);
+    this.layers.subscribeOnLayerRemove(this.onLayerRemove);
+    this.users.subscribeOnUserChange(this.onUserChange);
+    this.users.subscribeOnUserMove(this.onUserMove);
+    this._refresh.setUpdateCallback(this.update);
   }
 
   start() {

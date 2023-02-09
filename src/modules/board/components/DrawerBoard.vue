@@ -3,7 +3,6 @@ import { inject, PropType, reactive, shallowReactive } from 'vue';
 import {
   Manager,
   LineTool,
-  ToolManager,
   LayerManager,
   User,
   MoveTool,
@@ -14,7 +13,10 @@ import {
   DeleteTool,
   toolReducer,
   removeScratch,
-  Layer,
+  createLayer,
+  removeLayer,
+  layerReducer,
+  addObserver,
 } from '../../../plugins/drawer/';
 import { BoardService } from '../services/BoardService';
 import ToolBar from './drawer/ToolBar.vue';
@@ -22,6 +24,7 @@ import SettingsButton from './drawer/SettingsButton.vue';
 import ObserverBar from './drawer/ObserverBar.vue';
 import RightPanel from './drawer/rightPanel/RightPanel.vue';
 import QuitButton from './QuitButton.vue';
+import { nanoid } from 'nanoid';
 
 export default {
   components: { ToolBar, SettingsButton, ObserverBar, RightPanel, QuitButton },
@@ -34,18 +37,17 @@ export default {
   },
   emits: ['quitRoom'],
   setup(props) {
-    const board = new Manager(props.user.id);
+    const board = new Manager(props.user);
     board.tools = shallowReactive(board.tools);
     board.layers = reactive(board.layers) as LayerManager;
     board.users = reactive(board.users) as UserManager;
 
     board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
-    board.actions.addReducer(toolReducer, observerReducer);
+    board.actions.addReducer(toolReducer, observerReducer, layerReducer);
 
     return {
       boardService$: inject('boardService') as BoardService,
       intervalHandle: null as null | ReturnType<typeof setInterval>,
-      users: reactive({}) as Record<string, string>,
       board,
       toolPanel: board.tools,
       layerPanel: board.layers,
@@ -78,23 +80,11 @@ export default {
       return this.toolPanel?.tools.map((t) => t.constructor.name);
     },
   },
-  watch: {
-    room: {
-      handler(next, current) {},
-      immediate: true,
-    },
-    user: {
-      handler(next, current) {
-        this.users[current?.id ?? next.id] = next.name;
-      },
-      immediate: true,
-    },
-  },
   mounted() {
     if (!this.$refs.boardContainer) return;
     this.board.setContainer(this.$refs.boardContainer as HTMLDivElement);
     this.board.init();
-    this.start();
+    this.load();
   },
   beforeUnmount() {
     this.stop();
@@ -102,43 +92,35 @@ export default {
   methods: {
     start() {
       this.board?.start();
-      this.subscribeToChanges();
       this.startChangesStream();
+      this.subscribeToChanges();
     },
     stop() {
       this.board?.stop();
       this.unsubscribeFromChanges();
       this.stopChangesStream();
     },
+    init() {
+      this.board.actions.dispatch(
+        addObserver(this.user.id, { name: this.user.name })
+      );
+      setTimeout(() => {
+        const layer = this.board.layers.order[1];
+        if (layer) this.board.layers.setActive(layer);
+        this.board.users.setActive(this.user.id);
+      }, 5000);
+      this.start();
+    },
+    async load() {
+      const data = await this.boardService$.loadData(this.room);
+      if (data) this.board.deserialize(data);
+      this.init();
+    },
     updatedHandler(data: { actions: Action[] }) {
       this.board?.actions.dispatch(data.actions, false);
     },
     subscribeToChanges() {
       this.boardService$.subscribe(this.updatedHandler);
-      this.boardService$.subscribeToUsersChanges(this.updateUsersHandler);
-    },
-    updateUsersHandler({
-      user,
-      action,
-    }: {
-      user: { name: string; id: string };
-      action: string;
-    }) {
-      if (action === 'join' && !this.users[user.id]) {
-        this.users[user.id] = user.name;
-        const newUser = new User(user.id);
-        this.observerPanel?.add(newUser);
-      }
-      if (action === 'leave') {
-        delete this.users[user.id];
-        if (this.observerPanel?.active === user.id) {
-          const self = this.observerPanel.users.find(
-            (o) => o.id === this.user.id
-          );
-          this.observerPanel?.setActive(self?.id);
-        }
-        this.observerPanel?.remove(user.id);
-      }
     },
     startChangesStream() {
       this.intervalHandle = setInterval(() => {
@@ -150,7 +132,7 @@ export default {
             user: this.user.id,
           });
         }
-      }, 100);
+      }, 500);
     },
     stopChangesStream() {
       if (this.intervalHandle) {
@@ -159,7 +141,6 @@ export default {
     },
     unsubscribeFromChanges() {
       this.boardService$.unsubscribe(this.updatedHandler);
-      this.boardService$.unsubscribeToUsersChanges(this.updateUsersHandler);
     },
     setTool(tool: string) {
       this.toolPanel?.setActive(tool);
@@ -181,11 +162,13 @@ export default {
       }
     },
     deleteLayer(id: string) {
-      this.layerPanel?.remove(id);
+      this.board.actions.dispatch(removeLayer(id, {}));
     },
     createLayer() {
-      const layer = new Layer((this.layerPanel?.getMaxZIndex() ?? 0) + 1);
-      this.layerPanel?.add(layer);
+      const id = nanoid();
+      const z = (this.layerPanel?.getMaxZIndex() ?? 0) + 1;
+      this.board.actions.dispatch(createLayer(id, z, {}));
+      this.board.layers.setActive(id);
     },
     selectLayer(layerId: string) {
       this.layerPanel?.setActive(layerId);
@@ -220,7 +203,6 @@ export default {
     <ObserverBar
       class="observerbar"
       :observers="observerPanel?.users"
-      :users="users"
       :active="observerPanel?.active"
       @change-observer="setObserver"
     />
