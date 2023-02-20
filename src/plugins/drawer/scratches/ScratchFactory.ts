@@ -17,6 +17,7 @@ export class ScratchFactory {
   }
 
   static unserialize(s: any) {
+    if (!s) return null;
     if (s.name === 'PenScratch') {
       return PenScratch.create(s.id, s.user, s.payload);
     }

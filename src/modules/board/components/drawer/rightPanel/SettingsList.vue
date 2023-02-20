@@ -1,4 +1,6 @@
 <script lang="ts">
+import { Manager } from '@plugins/drawer';
+import { PropType } from 'vue';
 import ColorPicker from './ColorPicker.vue';
 import LineWidthPicker from './LineWidthPicker.vue';
 import PanelSection from './PanelSection.vue';
@@ -10,16 +12,17 @@ export default {
     PanelSection,
   },
   props: {
-    lineWidth: { type: Number, required: true },
-    color: { type: String, required: true },
+    board: {
+      type: Object as PropType<Manager>,
+      required: true,
+    },
   },
-  emits: ['changeWidth', 'changeColor'],
   methods: {
     changeWidth(width: number) {
-      this.$emit('changeWidth', width);
+      this.board?.settings.set('thickness', width);
     },
     changeColor(color: string) {
-      this.$emit('changeColor', color);
+      this.board?.settings.set('color', color);
     },
   },
 };
@@ -29,8 +32,14 @@ export default {
   <PanelSection>
     <template #header>Settings</template>
     <div class="content">
-      <LineWidthPicker :default-value="lineWidth" @change-width="changeWidth" />
-      <ColorPicker :active="color" @change-color="changeColor" />
+      <LineWidthPicker
+        :default-value="board.settings.get('thickness')"
+        @change-width="changeWidth"
+      />
+      <ColorPicker
+        :active="board.settings.get('color')"
+        @change-color="changeColor"
+      />
     </div>
   </PanelSection>
 </template>

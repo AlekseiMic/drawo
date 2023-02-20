@@ -2,16 +2,32 @@
 import { PropType } from 'vue';
 import PanelSection from './PanelSection.vue';
 import ScratchItem from './ScratchItem.vue';
+import { Manager, removeScratch } from '@plugins/drawer/';
 
 export default {
   components: { ScratchItem, PanelSection },
   props: {
-    scratches: {
-      type: Array as PropType<string[]>,
-      default: () => [],
+    board: {
+      type: Object as PropType<Manager>,
+      required: true,
     },
   },
-  emits: ['delete-scratch'],
+  computed: {
+    scratches() {
+      const active = this.board.layers?.active;
+      if (!active) return [];
+      return this.board.layers?.getScratches(active) ?? [];
+    },
+  },
+  methods: {
+    deleteScratch(id: string) {
+      if (this.board.layers?.active) {
+        this.board?.actions.dispatch(
+          removeScratch(id, {}, this.board.layers.active)
+        );
+      }
+    },
+  },
 };
 </script>
 
@@ -25,7 +41,7 @@ export default {
         v-for="scratch in scratches"
         :key="scratch"
         :scratch="scratch"
-        @delete-scratch="$emit('delete-scratch', $event)"
+        @delete-scratch="deleteScratch"
       />
     </ul>
   </PanelSection>

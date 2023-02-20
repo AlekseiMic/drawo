@@ -1,35 +1,35 @@
 <script lang="ts">
+import { Manager, User } from '@plugins/drawer';
 import IconButton from '@ui/buttons/IconButton.vue';
-import { User } from 'src/plugins/drawer';
 import { PropType } from 'vue';
 
 export default {
   components: { IconButton },
   props: {
-    observers: {
-      type: Array as PropType<User[]>,
-      default: () => [],
-    },
-    active: {
-      type: String as PropType<string | null>,
-      default: () => null,
+    board: {
+      type: Object as PropType<Manager>,
+      required: true,
     },
   },
-  emits: ['changeObserver'],
+  methods: {
+    setObserver(observer: User) {
+      this.board.users?.setActive(observer.id);
+    },
+  },
 };
 </script>
 
 <template>
   <div class="observerPanel">
     <IconButton
-      v-for="observer in observers"
+      v-for="observer in board.users.users"
       :key="observer.id"
       :title="observer.name"
       :class="{
         observer: true,
-        active: active === observer.id,
+        active: board.users.active === observer.id,
       }"
-      @click="$emit('changeObserver', observer)"
+      @click="setObserver(observer)"
     >
       <span :title="observer.id">
         {{ observer.name.slice(0, 2).toUpperCase() }}

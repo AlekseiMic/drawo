@@ -23,7 +23,8 @@
     "allowJs": true,
     "paths": {
       "@ui/*": ["src/components/ui/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@plugins/*": ["src/plugins/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
