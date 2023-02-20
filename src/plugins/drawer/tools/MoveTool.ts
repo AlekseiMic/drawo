@@ -14,6 +14,8 @@ import {
 import { throttle } from '../utils/throttle';
 import { BaseTool } from './BaseTool';
 
+let lastEndEvent = 0;
+
 export class MoveTool extends BaseTool implements ITool {
   private hovered: IScratch | null = null;
 
@@ -29,7 +31,7 @@ export class MoveTool extends BaseTool implements ITool {
     this.mouseDown = this.mouseDown.bind(this);
     this.mouseUp = this.mouseUp.bind(this);
 
-    this.touchMove = throttle(this.mouseMove.bind(this), 10);
+    this.touchMove = throttle(this.touchMove.bind(this), 10);
     this.touchStart = this.touchStart.bind(this);
     this.touchEnd = this.touchEnd.bind(this);
   }
@@ -52,6 +54,7 @@ export class MoveTool extends BaseTool implements ITool {
     const s = this.hovered;
     document.body.style.cursor = 'auto';
     this.hovered = null;
+    console.log('happens');
     this.manager.actions.dispatch(
       unhoverScratch(s.id, {}, this.manager.layers!.active!)
     );
@@ -83,8 +86,11 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private touchStart(e: TouchEvent) {
+    console.log('touch start');
+    e.preventDefault();
     document.body.style.cursor = 'grabbing';
     this.start = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    console.log('TS: ', this.hovered);
     if (!this.hovered) {
       this.checkHover({ x: e.touches[0].clientX, y: e.touches[0].clientY });
     }
@@ -109,25 +115,14 @@ export class MoveTool extends BaseTool implements ITool {
     this.drag(this.hovered);
   }
 
-  private touchEnd(event: TouchEvent) {
+  private touchEnd(e: TouchEvent) {
+    console.log('touch end');
+    e.preventDefault();
     document.body.style.cursor = 'grab';
-    if (!this.dragged) {
-      this.canvasDrag = false;
-      return;
-    }
-    const s = this.dragged;
-    const point = {
-      x:
-        event.touches[0].clientX +
-        this.manager.rect.left -
-        this.manager.offset.x,
-      y:
-        event.touches[0].clientY +
-        this.manager.rect.top -
-        this.manager.offset.y,
-    };
+    this.canvasDrag = false;
     this.drop();
-    if (!this.isHovers(s, point)) this.unhover();
+    this.unhover();
+    lastEndEvent = Date.now();
   }
 
   private mouseUp(event: MouseEvent) {
@@ -175,6 +170,7 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private checkHover(point: Point) {
+    if (Date.now() - lastEndEvent < 100) return;
     if (!this.manager.layers!.active) return;
     if (this.dragged) return this.dragMove(point);
     if (this.canvasDrag) return this.dragCanvas(point);
@@ -194,19 +190,24 @@ export class MoveTool extends BaseTool implements ITool {
     for (const id of activeScratchesIds) {
       const s = this.manager.scratches.get(id);
       if (!s || !this.isHovers(s, p)) continue;
+      console.log('checkHover');
       this.hover(s);
       break;
     }
   }
 
   private touchMove(event: TouchEvent) {
-    this.checkHover({
+    event.preventDefault();
+    console.log('touch move');
+    const point = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
-    });
+    };
+    this.checkHover(point);
   }
 
   private mouseMove(event: MouseEvent) {
+    console.log('mouse move');
     this.checkHover({
       x: event.clientX,
       y: event.clientY,
@@ -217,17 +218,17 @@ export class MoveTool extends BaseTool implements ITool {
     window.addEventListener('mousemove', this.mouseMove);
     window.addEventListener('mousedown', this.mouseDown);
     window.addEventListener('mouseup', this.mouseUp);
-    window.addEventListener('touchmove', this.touchMove);
     window.addEventListener('touchstart', this.touchStart);
     window.addEventListener('touchend', this.touchEnd);
+    window.addEventListener('touchmove', this.touchMove);
   }
 
   protected disableListeners(): void {
     window.removeEventListener('mousemove', this.mouseMove);
     window.removeEventListener('mousedown', this.mouseDown);
     window.removeEventListener('mouseup', this.mouseUp);
-    window.removeEventListener('touchmove', this.touchMove);
     window.removeEventListener('touchstart', this.touchStart);
     window.removeEventListener('touchend', this.touchEnd);
+    window.removeEventListener('touchmove', this.touchMove);
   }
 }
