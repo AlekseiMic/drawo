@@ -62,6 +62,7 @@ export default {
     },
     stop() {
       this.board?.stop();
+      this.board?.tools.getActive()?.disable();
       this.unsubscribeFromChanges();
       this.stopChangesStream();
     },
@@ -73,7 +74,7 @@ export default {
         const layer = this.board.layers.order[1];
         if (layer) this.board.layers.setActive(layer);
         this.board.users.setActive(this.user.id);
-      }, 5000);
+      }, 2000);
       this.start();
     },
     async load() {
