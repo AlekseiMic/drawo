@@ -208,8 +208,10 @@ export class Manager {
   ) {
     for (const id of ids) {
       const scratch = this.scratches.get(id);
-      const hide = layer !== 'preview' && scratch.state !== ScratchState.active;
-      if (!scratch || hide || !scratch.isIntersectsRect(rect)) continue;
+      const skip =
+        !scratch ||
+        (layer !== 'preview' && scratch.state !== ScratchState.active);
+      if (skip || !scratch.isIntersectsRect(rect)) continue;
       scratch.draw(imageData, this._drawService, rect);
     }
   }

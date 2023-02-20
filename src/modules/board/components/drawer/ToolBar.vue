@@ -5,8 +5,9 @@ import PenIcon from '@assets/svg/pen.svg?component';
 import EraserIcon from '@assets/svg/eraser2.svg?component';
 import IconButton from '@ui/buttons/IconButton.vue';
 import { PropType } from 'vue';
+import { Manager } from '../../../../plugins/drawer/';
 
-const toolIcons: Record<string, string> = {
+const icons: Record<string, string> = {
   LineTool: 'LineIcon',
   MoveTool: 'MoveIcon',
   PenTool: 'PenIcon',
@@ -16,31 +17,26 @@ const toolIcons: Record<string, string> = {
 export default {
   components: { LineIcon, MoveIcon, PenIcon, IconButton, EraserIcon },
   props: {
-    tools: {
-      type: Array as PropType<string[]>,
-      default: () => [],
-    },
-    active: {
-      type: String,
-      default: () => '',
+    board: {
+      type: Object as PropType<Manager>,
+      required: true,
     },
   },
-  emits: ['changeTool'],
   data() {
-    return { toolIcons };
+    return { icons };
   },
 };
 </script>
 
 <template>
-  <div class="panel" @mousedown.stop="">
+  <div class="panel" @mousedown.stop="" @touchstart.stop="" @touchend.stop="">
     <IconButton
-      v-for="tool in tools"
-      :key="tool"
-      :class="{ tool: true, active: active === tool }"
-      @click.stop="$emit('changeTool', tool)"
+      v-for="tool in board.tools.tools"
+      :key="tool.constructor.name"
+      :class="{ tool: true, active: board.tools.getActive() === tool }"
+      @click.stop="board.tools.setActive(tool.constructor.name)"
     >
-      <component :is="toolIcons[tool]" />
+      <component :is="icons[tool.constructor.name]" />
     </IconButton>
   </div>
 </template>

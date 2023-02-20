@@ -10,7 +10,7 @@ export default {
 
 <template>
   <div class="container">
-    <HomeHeader class="header" />
+    <HomeHeader class="header"/>
     <HomeMain class="main" />
     <HomeFooter class="footer" />
   </div>

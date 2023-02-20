@@ -14,7 +14,7 @@ export default {
     HomeFooter,
   },
   setup() {
-    const socket = new SocketService('http://localhost:5441');
+    const socket = new SocketService('http://192.168.0.103:5441');
     const boardService$ = new BoardService(socket);
     provide('boardService', boardService$);
     provide('storage', new Storage());

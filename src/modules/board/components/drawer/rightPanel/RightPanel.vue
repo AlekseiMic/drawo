@@ -3,6 +3,7 @@ import LayerList from './LayerList.vue';
 import ScratchList from './ScratchList.vue';
 import { PropType } from 'vue';
 import SettingsList from './SettingsList.vue';
+import { Manager } from '@plugins/drawer/';
 
 export default {
   components: {
@@ -11,51 +12,19 @@ export default {
     SettingsList,
   },
   props: {
-    lineWidth: { type: Number, default: () => 3 },
-    color: { type: String, default: () => '#ffffff' },
-    layers: {
-      type: Array as PropType<{ id: string; removable: boolean }[]>,
-      default: () => [],
-    },
-    scratches: { type: Array as PropType<string[]>, default: () => [] },
-  },
-  emits: [
-    'changeWidth',
-    'changeColor',
-    'delete-scratch',
-    'delete-layer',
-    'createLayer',
-    'selectLayer',
-  ],
-  methods: {
-    changeWidth(width: number) {
-      this.$emit('changeWidth', width);
-    },
-    changeColor(color: string) {
-      this.$emit('changeColor', color);
+    board: {
+      type: Object as PropType<Manager>,
+      required: true,
     },
   },
 };
 </script>
 
 <template>
-  <div class="panel" @click.stop="" @mousedown.stop="" @mouseup.stop="">
-    <SettingsList
-      :line-width="lineWidth"
-      :color="color"
-      @change-width="changeWidth"
-      @change-color="changeColor"
-    />
-    <LayerList
-      :layers="layers"
-      @delete-layer="$emit('delete-layer', $event)"
-      @create-layer="$emit('createLayer')"
-      @select-layer="$emit('selectLayer', $event)"
-    />
-    <ScratchList
-      :scratches="scratches"
-      @delete-scratch="$emit('delete-scratch', $event)"
-    />
+  <div class="panel" @touchstart.stop="" @touchend.stop="" @click.stop="" @mousedown.stop="" @mouseup.stop="">
+    <SettingsList :board="board" />
+    <LayerList :board="board" />
+    <ScratchList :board="board" />
   </div>
 </template>
 

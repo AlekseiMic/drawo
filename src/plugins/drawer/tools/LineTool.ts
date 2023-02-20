@@ -1,6 +1,6 @@
 import { ITool } from '../interfaces/ITool';
 import { Point } from '../interfaces/Point';
-import { addScratch, changeScratch, Manager, moveScratch } from '../';
+import { addScratch, changeScratch, Manager, moveScratch, throttle } from '../';
 import { BaseCreationalTool } from './BaseCreationalTool';
 
 export class LineTool extends BaseCreationalTool implements ITool {
@@ -11,15 +11,19 @@ export class LineTool extends BaseCreationalTool implements ITool {
   constructor(manager: Manager) {
     super(manager);
 
-    this.mouseupListener = this.mouseupListener.bind(this);
-    this.mousedownListener = this.mousedownListener.bind(this);
-    this.mousemoveListener = this.mousemoveListener.bind(this);
+    this.changeScratch = throttle(this.changeScratch.bind(this), 10);
+    this.mouseUp = this.mouseUp.bind(this);
+    this.mouseDown = this.mouseDown.bind(this);
+    this.mouseMove = this.mouseMove.bind(this);
+    this.touchStart = this.touchStart.bind(this);
+    this.touchEnd = this.touchEnd.bind(this);
+    this.touchMove = this.touchMove.bind(this);
   }
 
-  private mousedownListener(e: MouseEvent) {
+  private startScratch(p: Point) {
     this.start();
-    this.update(e, 'startPoint');
-    this.update(e, 'endPoint');
+    this.update(p, 'startPoint');
+    this.update(p, 'endPoint');
     this.manager.actions.dispatch(
       addScratch(this.id!, {
         ...this.getDefaultCreateOptions(),
@@ -28,10 +32,10 @@ export class LineTool extends BaseCreationalTool implements ITool {
     );
   }
 
-  private mouseupListener(e: MouseEvent) {
+  private endScratch(p: Point) {
     const layerId = this.manager.layers!.active;
     if (layerId && this.active && this.id) {
-      this.update(e, 'endPoint');
+      this.update(p, 'endPoint');
       this.manager.actions.dispatch(
         moveScratch(this.id, { layerId, ...this.getPoints() })
       );
@@ -39,9 +43,9 @@ export class LineTool extends BaseCreationalTool implements ITool {
     this.end();
   }
 
-  private mousemoveListener(e: MouseEvent) {
+  private changeScratch(p: Point) {
     if (!this.active || !this.id) return;
-    this.update(e, 'endPoint');
+    this.update(p, 'endPoint');
     this.manager.actions.dispatch(changeScratch(this.id, this.getPoints()));
   }
 
@@ -52,21 +56,69 @@ export class LineTool extends BaseCreationalTool implements ITool {
     };
   }
 
-  private update(e: MouseEvent, point: 'endPoint' | 'startPoint' = 'endPoint') {
+  private update(p: Point, prop: 'endPoint' | 'startPoint' = 'endPoint') {
     const offsetX = this.manager.rect.left - this.manager.offset.x;
     const offsetY = this.manager.rect.top - this.manager.offset.y;
-    this[point] = { x: e.x + offsetX, y: e.y + offsetY };
+    this[prop] = { x: p.x + offsetX, y: p.y + offsetY };
+  }
+
+  private mouseDown(e: MouseEvent) {
+    this.startScratch({
+      x: e.clientX,
+      y: e.clientY,
+    });
+  }
+
+  private mouseUp(e: MouseEvent) {
+    this.endScratch({
+      x: e.clientX,
+      y: e.clientY,
+    });
+  }
+
+  private mouseMove(e: MouseEvent) {
+    this.changeScratch({
+      x: e.clientX,
+      y: e.clientY,
+    });
+  }
+
+  private touchStart(e: TouchEvent) {
+    this.startScratch({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
+  }
+
+  private touchEnd(e: TouchEvent) {
+    this.endScratch({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
+  }
+
+  private touchMove(e: TouchEvent) {
+    this.changeScratch({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
   }
 
   protected disableListeners() {
-    window.removeEventListener('mousedown', this.mousedownListener);
-    window.removeEventListener('mouseup', this.mouseupListener);
-    window.removeEventListener('mousemove', this.mousemoveListener);
+    window.removeEventListener('mousedown', this.mouseDown);
+    window.removeEventListener('mouseup', this.mouseUp);
+    window.removeEventListener('mousemove', this.mouseMove);
+    window.removeEventListener('touchstart', this.touchStart);
+    window.removeEventListener('touchend', this.touchEnd);
+    window.removeEventListener('touchmove', this.touchMove);
   }
 
   protected applyListeners() {
-    window.addEventListener('mousedown', this.mousedownListener);
-    window.addEventListener('mouseup', this.mouseupListener);
-    window.addEventListener('mousemove', this.mousemoveListener);
+    window.addEventListener('mousedown', this.mouseDown);
+    window.addEventListener('mouseup', this.mouseUp);
+    window.addEventListener('mousemove', this.mouseMove);
+    window.addEventListener('touchstart', this.touchStart);
+    window.addEventListener('touchend', this.touchEnd);
+    window.addEventListener('touchmove', this.touchMove);
   }
 }

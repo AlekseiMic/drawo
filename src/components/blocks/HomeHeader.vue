@@ -6,7 +6,7 @@ export default {
 </script>
 
 <template>
-  <header>
+  <header @mousedown.stop="" @touchstart.stop="" @touchend.stop="">
     <OmegaLink class="logo" to="/">drawo</OmegaLink>
     <div id="header-anchor"></div>
   </header>
