@@ -74,13 +74,17 @@ export class DrawService {
     rect: Rect
   ) {
     const data = imageData.data;
+
     const width = imageData.width;
+    const height = imageData.height;
 
-    let x = rect.left - leftEdge;
-    let y = rect.top - topEdge;
-    const maxX = Math.min(rect.right - leftEdge, width);
-    const maxY = Math.min(imageData.height, rect.bottom - topEdge);
+    const minX = Math.max(1, rect.left - leftEdge);
+    const minY = Math.max(1, rect.top - topEdge);
+    const maxX = Math.min(rect.right - leftEdge, width - 1);
+    const maxY = Math.min(rect.bottom - topEdge, height - 1);
 
+    let x = minX;
+    let y = minY;
     let idx = 0;
     while (y <= maxY) {
       idx = 4 * (y * width + x);
@@ -93,7 +97,7 @@ export class DrawService {
         idx += 4;
       }
       y += 1;
-      x = rect.left - leftEdge;
+      x = minX;
     }
   }
 }
