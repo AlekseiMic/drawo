@@ -11,12 +11,15 @@ import {
   translateScratch,
   unhoverScratch,
 } from '../';
-import { throttle } from '../utils/throttle';
 import { BaseTool } from './BaseTool';
 
-let lastEndEvent = 0;
+const RADIUS = 10;
 
 export class MoveTool extends BaseTool implements ITool {
+  private lastTouchTS = 0;
+
+  private touchId?: number;
+
   private hovered: IScratch | null = null;
 
   private dragged: IScratch | null = null;
@@ -27,11 +30,12 @@ export class MoveTool extends BaseTool implements ITool {
 
   constructor(manager: Manager) {
     super(manager);
-    this.mouseMove = throttle(this.mouseMove.bind(this), 10);
+
+    this.mouseMove = this.mouseMove.bind(this);
     this.mouseDown = this.mouseDown.bind(this);
     this.mouseUp = this.mouseUp.bind(this);
 
-    this.touchMove = throttle(this.touchMove.bind(this), 10);
+    this.touchMove = this.touchMove.bind(this);
     this.touchStart = this.touchStart.bind(this);
     this.touchEnd = this.touchEnd.bind(this);
   }
@@ -42,102 +46,39 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private hover(s: IScratch) {
-    document.body.style.cursor = 'grab';
+    const layer = this.manager.layers!.active;
+    if (!layer) return;
+
+    this.manager.actions.dispatch(hoverScratch(s.id, {}, layer));
     this.hovered = s;
-    this.manager.actions.dispatch(
-      hoverScratch(s.id, {}, this.manager.layers!.active!)
-    );
+
+    document.body.style.cursor = 'grab';
   }
 
   private unhover() {
-    if (!this.hovered) return;
-    const s = this.hovered;
-    document.body.style.cursor = 'auto';
+    const layer = this.manager.layers!.active;
+    if (!layer || !this.hovered) return;
+
+    this.manager.actions.dispatch(unhoverScratch(this.hovered.id, {}, layer));
     this.hovered = null;
-    console.log('happens');
-    this.manager.actions.dispatch(
-      unhoverScratch(s.id, {}, this.manager.layers!.active!)
-    );
+
+    document.body.style.cursor = 'auto';
   }
 
   private drag(s: IScratch) {
+    const layer = this.manager.layers.active;
+    if (!layer) return;
+
+    this.manager.actions.dispatch(dragScratch(s.id, {}, layer));
     this.dragged = s;
-    this.manager.actions.dispatch(
-      dragScratch(s.id, {}, this.manager.layers.active!)
-    );
   }
 
   private drop() {
-    if (!this.dragged) return;
-    const s = this.dragged;
+    const layer = this.manager.layers.active;
+    if (!layer || !this.dragged) return;
+
+    this.manager.actions.dispatch(dropScratch(this.dragged.id, {}, layer));
     this.dragged = null;
-    this.manager.actions.dispatch(
-      dropScratch(s.id, {}, this.manager.layers.active!)
-    );
-  }
-
-  private isHovers(s: IScratch, p: Point) {
-    if (s.state === ScratchState.hidden) return false;
-    const rect = s.rect;
-    const region = 10;
-    if (rect.left - region >= p.x || rect.right + region <= p.x) return false;
-    if (rect.top - region >= p.y || rect.bottom + region <= p.y) return false;
-    return s.isIntersects(p, region);
-  }
-
-  private touchStart(e: TouchEvent) {
-    console.log('touch start');
-    e.preventDefault();
-    document.body.style.cursor = 'grabbing';
-    this.start = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    console.log('TS: ', this.hovered);
-    if (!this.hovered) {
-      this.checkHover({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-    }
-    if (!this.hovered) {
-      this.canvasDrag = true;
-      return;
-    }
-    const layer = this.manager.layers!.active;
-    if (!layer) return;
-    this.drag(this.hovered);
-  }
-
-  private mouseDown(event: MouseEvent) {
-    document.body.style.cursor = 'grabbing';
-    this.start = { x: event.x, y: event.y };
-    if (!this.hovered) {
-      this.canvasDrag = true;
-      return;
-    }
-    const layer = this.manager.layers!.active;
-    if (!layer) return;
-    this.drag(this.hovered);
-  }
-
-  private touchEnd(e: TouchEvent) {
-    console.log('touch end');
-    e.preventDefault();
-    document.body.style.cursor = 'grab';
-    this.canvasDrag = false;
-    this.drop();
-    this.unhover();
-    lastEndEvent = Date.now();
-  }
-
-  private mouseUp(event: MouseEvent) {
-    document.body.style.cursor = 'grab';
-    if (!this.dragged) {
-      this.canvasDrag = false;
-      return;
-    }
-    const s = this.dragged;
-    const point = {
-      x: event.x + this.manager.rect.left - this.manager.offset.x,
-      y: event.y + this.manager.rect.top - this.manager.offset.y,
-    };
-    this.drop();
-    if (!this.isHovers(s, point)) this.unhover();
   }
 
   private dragMove(p: Point) {
@@ -150,11 +91,11 @@ export class MoveTool extends BaseTool implements ITool {
   }
 
   private dragCanvas(point: Point) {
-    const observer = this.manager.users.active;
-    if (!observer) return;
-    this.manager.actions.dispatch(
-      moveObserver(observer, this.getCoordChange(point))
-    );
+    const user = this.manager.users.active;
+    if (!user) return;
+
+    const pointDiff = this.getCoordChange(point);
+    this.manager.actions.dispatch(moveObserver(user, pointDiff));
     this.updateStartCoord(point);
   }
 
@@ -169,49 +110,144 @@ export class MoveTool extends BaseTool implements ITool {
     this.start = { x: p.x, y: p.y };
   }
 
-  private checkHover(point: Point) {
-    if (Date.now() - lastEndEvent < 100) return;
+  private checkHover(rawPoint: Point) {
     if (!this.manager.layers!.active) return;
-    if (this.dragged) return this.dragMove(point);
-    if (this.canvasDrag) return this.dragCanvas(point);
+    if (this.dragged) return this.dragMove(rawPoint);
+    if (this.canvasDrag) return this.dragCanvas(rawPoint);
 
-    const p = {
+    const point = this.preparePoint(rawPoint);
+
+    if (this.hovered && this.isHovers(this.hovered, point)) return;
+    if (this.hovered) this.unhover();
+
+    const hovered = this.getHoveredScratchInActiveLayer(point);
+    if (hovered) this.hover(hovered);
+  }
+
+  private isHovers(s: IScratch, p: Point) {
+    if (s.state === ScratchState.hidden) return false;
+    const rect = s.rect;
+
+    if (rect.left - RADIUS >= p.x || rect.right + RADIUS <= p.x) return false;
+    if (rect.top - RADIUS >= p.y || rect.bottom + RADIUS <= p.y) return false;
+
+    return s.isIntersects(p, RADIUS);
+  }
+
+  private preparePoint(point: Point): Point {
+    return {
       x: point.x + this.manager.rect.left - this.manager.offset.x,
       y: point.y + this.manager.rect.top - this.manager.offset.y,
     };
+  }
 
-    if (this.hovered && this.isHovers(this.hovered, p)) return;
-    if (this.hovered) this.unhover();
-
+  private getHoveredScratchInActiveLayer(point: Point) {
     const layer = this.manager.layers!.getActive();
+
     const activeScratchesIds = layer
       ? this.manager.layers.getScratches(layer.id)
       : [];
+
     for (const id of activeScratchesIds) {
       const s = this.manager.scratches.get(id);
-      if (!s || !this.isHovers(s, p)) continue;
-      console.log('checkHover');
-      this.hover(s);
-      break;
+      if (s && this.isHovers(s, point)) return s;
     }
-  }
-
-  private touchMove(event: TouchEvent) {
-    event.preventDefault();
-    console.log('touch move');
-    const point = {
-      x: event.touches[0].clientX,
-      y: event.touches[0].clientY,
-    };
-    this.checkHover(point);
+    return null;
   }
 
   private mouseMove(event: MouseEvent) {
-    console.log('mouse move');
+    if (event.timeStamp - this.lastTouchTS < 100) return;
     this.checkHover({
       x: event.clientX,
       y: event.clientY,
     });
+  }
+
+  private mouseDown(event: MouseEvent) {
+    document.body.style.cursor = 'grabbing';
+    if (event.timeStamp - this.lastTouchTS < 100) return;
+
+    this.start = { x: event.x, y: event.y };
+
+    if (this.hovered) this.drag(this.hovered);
+    else this.canvasDrag = true;
+  }
+
+  private mouseUp(event: MouseEvent) {
+    document.body.style.cursor = 'grab';
+    if (event.timeStamp - this.lastTouchTS < 100) return;
+
+    this.canvasDrag = false;
+    if (!this.dragged) return;
+
+    const point = this.preparePoint({
+      x: event.x,
+      y: event.y,
+    });
+
+    if (!this.isHovers(this.dragged, point)) {
+      this.unhover();
+    }
+    this.drop();
+  }
+
+  private touchMove(event: TouchEvent) {
+    event.preventDefault();
+    this.lastTouchTS = event.timeStamp;
+
+    if (this.touchId === undefined) return;
+
+    const index = Array.from(event.changedTouches).findIndex(
+      (t) => t.identifier === this.touchId
+    );
+    if (index === -1) return;
+
+    const point = {
+      x: event.changedTouches[index].clientX,
+      y: event.changedTouches[index].clientY,
+    };
+
+    this.checkHover(point);
+  }
+
+  private touchEnd(event: TouchEvent) {
+    event.preventDefault();
+    this.lastTouchTS = event.timeStamp;
+
+    if (this.touchId === undefined) return;
+
+    const index = Array.from(event.changedTouches).findIndex(
+      (t) => t.identifier === this.touchId
+    );
+
+    if (index === -1) return;
+
+    document.body.style.cursor = 'grab';
+
+    this.touchId = undefined;
+    this.canvasDrag = false;
+    this.drop();
+  }
+
+  private touchStart(event: TouchEvent) {
+    event.preventDefault();
+    this.lastTouchTS = event.timeStamp;
+
+    if (this.touchId !== undefined) return;
+
+    this.touchId = event.changedTouches[0].identifier;
+
+    this.start = {
+      x: event.changedTouches[0].clientX,
+      y: event.changedTouches[0].clientY,
+    };
+    this.unhover();
+    this.checkHover(this.start);
+
+    document.body.style.cursor = 'grabbing';
+
+    if (this.hovered) this.drag(this.hovered);
+    else this.canvasDrag = true;
   }
 
   protected applyListeners(): void {

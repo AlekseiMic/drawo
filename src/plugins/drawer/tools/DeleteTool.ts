@@ -6,6 +6,8 @@ import { hoverScratch, Manager, removeScratch, unhoverScratch } from '../';
 import { throttle } from '../utils/throttle';
 import { BaseTool } from './BaseTool';
 
+let lastTouchEventTS = 0;
+
 export class DeleteTool extends BaseTool implements ITool {
   private hovered: IScratch | null = null;
 
@@ -13,11 +15,32 @@ export class DeleteTool extends BaseTool implements ITool {
     super(manager);
     this.mouseMove = throttle(this.mouseMove.bind(this), 10);
     this.click = this.click.bind(this);
+    this.touchStart = this.touchStart.bind(this);
   }
 
   disable(): void {
     document.body.style.cursor = 'auto';
     super.disable();
+  }
+
+  private touchStart(event: TouchEvent) {
+    event.preventDefault();
+    lastTouchEventTS = event.timeStamp;
+
+    if (!event.changedTouches[0]) return;
+
+    const point = this.preparePoint({
+      x: event.changedTouches[0].clientX,
+      y: event.changedTouches[0].clientY,
+    });
+
+    const hovered = this.getHoveredScratchInActiveLayer(point);
+    if (hovered) this.removeScratch(hovered);
+  }
+
+  private touchEnd(event: TouchEvent) {
+    event.preventDefault();
+    lastTouchEventTS = event.timeStamp;
   }
 
   private hover(s: IScratch) {
@@ -48,46 +71,61 @@ export class DeleteTool extends BaseTool implements ITool {
   }
 
   private mouseMove(event: MouseEvent) {
+    if (event.timeStamp - lastTouchEventTS <= 100) return;
     if (!this.manager.layers!.active) return;
 
-    const p = {
-      x: event.x + this.manager.rect.left - this.manager.offset.x,
-      y: event.y + this.manager.rect.top - this.manager.offset.y,
-    };
+    const p = this.preparePoint({ x: event.clientX, y: event.clientY });
 
     if (this.hovered && this.isHovers(this.hovered, p)) return;
     if (this.hovered) this.unhover();
 
-    const layer = this.manager.layers!.getActive();
-
-    const activeScratchesIds = layer
-      ? this.manager.layers.getScratches(layer.id)
-      : [];
-
-    for (const id of activeScratchesIds) {
-      const s = this.manager.scratches.get(id);
-      if (!s || !this.isHovers(s, p)) continue;
-      this.hover(s);
-      break;
-    }
+    const hovered = this.getHoveredScratchInActiveLayer(p);
+    if (hovered) this.hover(hovered);
   }
 
-  private click() {
+  private preparePoint(point: Point): Point {
+    return {
+      x: point.x + this.manager.rect.left - this.manager.offset.x,
+      y: point.y + this.manager.rect.top - this.manager.offset.y,
+    };
+  }
+
+  private getHoveredScratchInActiveLayer(point: Point) {
+    const layer = this.manager.layers!.getActive();
+
+    if (layer) {
+      for (const id of this.manager.layers.getScratches(layer.id)) {
+        const s = this.manager.scratches.get(id);
+        if (s && this.isHovers(s, point)) return s;
+      }
+    }
+    return null;
+  }
+
+  private click(event: MouseEvent) {
+    if (event.timeStamp - lastTouchEventTS <= 100) return;
     if (!this.hovered) return;
-    const s = this.hovered;
+    this.removeScratch(this.hovered);
     this.unhover();
-    this.manager.actions.dispatch(
-      removeScratch(s.id, {}, this.manager.layers.active!)
-    );
+  }
+
+  private removeScratch(scratch: IScratch) {
+    const layer = this.manager.layers.active;
+    if (!layer) return;
+    this.manager.actions.dispatch(removeScratch(scratch.id, {}, layer));
   }
 
   protected applyListeners(): void {
     window.addEventListener('click', this.click);
     window.addEventListener('mousemove', this.mouseMove);
+    window.addEventListener('touchstart', this.touchStart);
+    window.addEventListener('touchend', this.touchEnd);
   }
 
   protected disableListeners(): void {
     window.removeEventListener('click', this.click);
     window.removeEventListener('mousemove', this.mouseMove);
+    window.removeEventListener('touchstart', this.touchStart);
+    window.removeEventListener('touchend', this.touchEnd);
   }
 }

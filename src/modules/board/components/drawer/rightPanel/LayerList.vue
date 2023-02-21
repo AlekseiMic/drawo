@@ -56,14 +56,15 @@ export default {
       <IconButton class="add-btn" @click.stop="createLayer">+</IconButton>
     </template>
     <ul class="container">
-      <LayerItem
-        v-for="(layer, idx) in layers"
-        :key="layer.id"
-        :layer="layer"
-        :index="idx"
-        @delete-layer="deleteLayer"
-        @select-layer="selectLayer"
-      />
+      <li v-for="(layer, idx) in layers" :key="layer.id" class="item">
+        <LayerItem
+          :layer="layer"
+          :index="layers.length - idx"
+          :active="board.layers.active === layer.id"
+          @delete-layer="deleteLayer"
+          @select-layer="selectLayer"
+        />
+      </li>
     </ul>
   </PanelSection>
 </template>

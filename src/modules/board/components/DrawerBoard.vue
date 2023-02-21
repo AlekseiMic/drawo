@@ -20,6 +20,7 @@ import SettingsButton from './drawer/SettingsButton.vue';
 import ObserverBar from './drawer/ObserverBar.vue';
 import RightPanel from './drawer/rightPanel/RightPanel.vue';
 import QuitButton from './QuitButton.vue';
+import { SettingsStore } from '@plugins/drawer/services/SettingsStore';
 
 export default {
   components: { ToolBar, SettingsButton, ObserverBar, RightPanel, QuitButton },
@@ -36,8 +37,10 @@ export default {
     board.tools = shallowReactive(board.tools);
     board.layers = reactive(board.layers) as LayerManager;
     board.users = reactive(board.users) as UserManager;
+    board.settings = reactive(board.settings) as SettingsStore;
     board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
     board.actions.addReducer(toolReducer, observerReducer, layerReducer);
+
 
     return {
       boardService$: inject('boardService') as BoardService,

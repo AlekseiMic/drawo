@@ -4,6 +4,10 @@ import { throttle } from '../utils/throttle';
 import { BaseCreationalTool } from './BaseCreationalTool';
 
 export class PenTool extends BaseCreationalTool implements ITool {
+  private touchId?: number;
+
+  private lastTouchTS = 0;
+
   constructor(manager: Manager) {
     super(manager);
     this.mouseDown = this.mouseDown.bind(this);
@@ -53,28 +57,52 @@ export class PenTool extends BaseCreationalTool implements ITool {
 
   private touchStart(e: TouchEvent) {
     e.preventDefault();
+    this.lastTouchTS = e.timeStamp;
+    if (this.touchId !== undefined) return;
+
+    this.touchId = e.changedTouches[0].identifier;
     this.startScratch({
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY,
     });
   }
 
   private touchEnd(e: TouchEvent) {
     e.preventDefault();
+    this.lastTouchTS = e.timeStamp;
+    if (this.touchId === undefined) return;
+
+    const index = Array.from(e.changedTouches).findIndex(
+      (t) => t.identifier === this.touchId
+    );
+    if (index === -1) return;
+
+    this.touchId = undefined;
     this.finishScratch({
-      x: e.changedTouches[0].clientX,
-      y: e.changedTouches[0].clientY,
+      x: e.changedTouches[index].clientX,
+      y: e.changedTouches[index].clientY,
     });
   }
+
   private touchMove(e: TouchEvent) {
     e.preventDefault();
+    this.lastTouchTS = e.timeStamp;
+
+    if (this.touchId === undefined) return;
+
+    const index = Array.from(e.changedTouches).findIndex(
+      (t) => t.identifier === this.touchId
+    );
+    if (index === -1) return;
+
     this.addPoint({
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
+      x: e.changedTouches[index].clientX,
+      y: e.changedTouches[index].clientY,
     });
   }
 
   private mouseDown(e: MouseEvent) {
+    if (e.timeStamp - this.lastTouchTS < 100) return;
     this.startScratch({
       x: e.clientX,
       y: e.clientY,
@@ -82,6 +110,7 @@ export class PenTool extends BaseCreationalTool implements ITool {
   }
 
   private mouseUp(e: MouseEvent) {
+    if (e.timeStamp - this.lastTouchTS < 100) return;
     this.finishScratch({
       x: e.clientX,
       y: e.clientY,
@@ -89,6 +118,7 @@ export class PenTool extends BaseCreationalTool implements ITool {
   }
 
   private mouseMove(e: MouseEvent) {
+    if (e.timeStamp - this.lastTouchTS < 100) return;
     this.addPoint({
       x: e.clientX,
       y: e.clientY,

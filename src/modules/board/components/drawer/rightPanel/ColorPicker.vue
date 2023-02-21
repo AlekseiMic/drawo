@@ -43,9 +43,10 @@ export default {
   box-shadow: 0 0 3px 1px #777;
   width: 25px;
   height: 25px;
+  cursor: pointer;
 }
 .color.active {
-  box-shadow: 0 0 3px 2px #00FF00
+  box-shadow: 0 0 1px 3px #00aa44
 }
 </style>
 
