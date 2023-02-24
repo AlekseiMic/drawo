@@ -16,7 +16,8 @@ export default {
     scratches() {
       const active = this.board.layers?.active;
       if (!active) return [];
-      return this.board.layers?.getScratches(active) ?? [];
+      const scratchesIds = this.board.layers?.getScratches(active) ?? [];
+      return scratchesIds.map((id) => this.board.scratches.get(id));
     },
   },
   methods: {
@@ -38,9 +39,10 @@ export default {
     </template>
     <ul class="container">
       <ScratchItem
-        v-for="scratch in scratches"
-        :key="scratch"
+        v-for="(scratch, index) in scratches"
+        :key="scratch.id"
         :scratch="scratch"
+        :index="scratches.length - index"
         @delete-scratch="deleteScratch"
       />
     </ul>
