@@ -41,7 +41,6 @@ export default {
     board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
     board.actions.addReducer(toolReducer, observerReducer, layerReducer);
 
-
     return {
       boardService$: inject('boardService') as BoardService,
       intervalHandle: null as null | ReturnType<typeof setInterval>,
