@@ -17,8 +17,8 @@ export default {
   position: relative;
   background: none;
   padding: 0;
-  width: 20px;
-  height: 20px;
+  width: 2rem;
+  height: 2rem;
 }
 .close-icon {
   top: 0;
@@ -33,9 +33,9 @@ export default {
 .close-icon::after {
   position: absolute;
   display: block;
-  background: var(--c-default-text);
+  background: var(--c-default-text-80);
   content: '';
-  height: 3px;
+  height: .3rem;
   width: 100%;
   top: 50%;
   left: 50%;

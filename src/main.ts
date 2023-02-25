@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
-import './style.css';
+import './assets/styles/variables.css';
+import './assets/styles/style.css';
 import * as VueRouter from 'vue-router';
 import { routes } from './routes/index';
 import { VueModule } from './VueModule';

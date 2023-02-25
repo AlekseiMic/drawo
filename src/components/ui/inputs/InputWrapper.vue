@@ -99,6 +99,7 @@ export default {
   font-size: 1.5rem;
   line-height: 1.5rem;
   vertical-align: middle;
+  color: var(--c-default-text);
 }
 
 .full > .control {

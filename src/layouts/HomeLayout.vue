@@ -1,7 +1,7 @@
 <script lang="ts">
-import HomeHeader from './../components/blocks/HomeHeader.vue';
-import HomeFooter from './../components/blocks/HomeFooter.vue';
-import HomeMain from './../components/blocks/HomeMain.vue';
+import HomeHeader from './../components/HomeHeader.vue';
+import HomeFooter from './../components/HomeFooter.vue';
+import HomeMain from './../components/HomeMain.vue';
 
 export default {
   components: { HomeHeader, HomeFooter, HomeMain },

@@ -1,5 +1,5 @@
 <script lang="ts">
-import OmegaLink from '../ui/OmegaLink.vue';
+import OmegaLink from './ui/OmegaLink.vue';
 export default {
   components: { OmegaLink },
 };

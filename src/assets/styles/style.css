@@ -1,0 +1,35 @@
+:root {
+  font-family: Ubuntu, Inter, Avenir, Helvetica, Arial, sans-serif;
+  color-scheme: light dark;
+  color: var(--c-default-text);
+  background-color: var(--c-default-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  font-size: 1.6rem;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: none;
+}
+
+html {
+  font-size: 62.5%;
+  touch-action: none;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#app {
+  min-height: 100vh;
+}

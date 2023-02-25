@@ -1,6 +1,6 @@
 <script lang="ts">
 import IconButton from '@ui/buttons/IconButton.vue';
-import ExitIcon from '../../../assets/svg/exit.svg?component';
+import ExitIcon from '@assets/svg/exit.svg?component';
 
 export default {
   components: { ExitIcon, IconButton },

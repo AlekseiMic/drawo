@@ -28,7 +28,7 @@ export default {
   </InputWrapper>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 input {
   border: none;
   outline: none;
@@ -38,5 +38,10 @@ input {
   width: 100%;
   height: 30px;
   font-size: inherit;
+  color: var(--c-default-text-120);
+
+  &::placeholder {
+    color: var(--c-default-text-60);
+  }
 }
 </style>

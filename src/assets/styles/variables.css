@@ -1,0 +1,12 @@
+:root {
+  --c-default-text: rgba(234, 234, 234, 1);
+  --c-default-text-120: rgba(255, 255, 255, 1);
+  --c-default-text-80: rgba(215, 215, 215, 0.7);
+  --c-default-text-60: rgba(215, 215, 215, 0.54);
+  --c-default-background: #242424;
+  --c-default-background-140: #171717;
+  --c-default-background-120: #202020;
+  --c-default-background-80: #282828;
+  --c-default-background-60: #414141;
+  --c-default-shadow: #333333cc;
+}

@@ -1,8 +1,8 @@
 <script lang="ts">
-import SimpleModal from '../../../components/SimpleModal.vue';
+import SimpleModal from '@ui/SimpleModal.vue';
 import { inject } from 'vue';
 import { BoardService, ResponseStatus } from '../services/BoardService';
-import ConnectForm from '../components/ConnectForm.vue';
+import ConnectForm from '../components/forms/ConnectForm.vue';
 import { Storage } from '../services/Storage';
 
 export default {

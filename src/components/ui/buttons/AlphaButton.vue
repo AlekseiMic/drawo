@@ -21,16 +21,22 @@ button {
   border-radius: 5px;
   height: 32px;
   font-size: 1.6rem;
+  background: var(--c-default-background-60);
+  color: var(--c-default-text);
+
   &.full {
     width: 100%;
   }
+
   &.blank {
     background: transparent;
     border: 0;
   }
+
   &:hover {
-    opacity: .6;
+    opacity: 0.6;
   }
+
   &:focus {
     outline: 2px solid purple;
   }

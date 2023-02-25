@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Teleport } from 'vue';
-import CloseButton from './ui/buttons/CloseButton.vue';
+import CloseButton from './buttons/CloseButton.vue';
 
 export default {
   components: { Teleport: Teleport as any, CloseButton },
