@@ -78,6 +78,7 @@ header label {
 header .add-btn {
   width: 24px;
   height: 24px;
+  line-height: 5px;
   flex-shrink: 0;
 }
 

@@ -1,13 +1,13 @@
 <script lang="ts">
-import SimpleModal from '../../../components/SimpleModal.vue';
-import DrawerBoard from '../components/DrawerBoard.vue';
+import SimpleModal from '@ui/SimpleModal.vue';
+import DrawingBoard from '../components/DrawingBoard.vue';
 import { inject } from 'vue';
 import { BoardService, ResponseStatus } from '../services/BoardService';
 import { Storage } from '../services/Storage';
 import AlphaButton from '@ui/buttons/AlphaButton.vue';
 
 export default {
-  components: { SimpleModal, AlphaButton, DrawerBoard },
+  components: { SimpleModal, AlphaButton, DrawingBoard },
   setup() {
     const boardService$ = inject('boardService') as BoardService;
     const storage$ = inject('storage') as Storage;
@@ -92,7 +92,7 @@ export default {
       <AlphaButton class="error-btn" full @click="goToBoard">ok</AlphaButton>
     </SimpleModal>
   </div>
-  <DrawerBoard
+  <DrawingBoard
     v-if="connected"
     :user="user"
     :room="room"

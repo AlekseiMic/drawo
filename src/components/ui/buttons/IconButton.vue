@@ -13,17 +13,17 @@ export default { components: { AlphaButton } };
 <style scoped lang="scss">
 button {
   cursor: pointer;
-  width: 40px;
-  height: 40px;
-  border-radius: 40px;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
 
   svg {
     font-size: 2.2rem;
-    max-width: 30px;
-    max-height: 30px;
+    max-width: 3rem;
+    max-height: 3rem;
   }
 }
 </style>

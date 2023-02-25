@@ -14,16 +14,15 @@ import {
   layerReducer,
   addObserver,
 } from '@plugins/drawer/';
-import { BoardService } from '../services/BoardService';
-import ToolBar from './drawer/ToolBar.vue';
-import SettingsButton from './drawer/SettingsButton.vue';
-import ObserverBar from './drawer/ObserverBar.vue';
-import RightPanel from './drawer/rightPanel/RightPanel.vue';
-import QuitButton from './QuitButton.vue';
 import { SettingsStore } from '@plugins/drawer/services/SettingsStore';
+import ToolBar from './ToolBar.vue';
+import ObserverBar from './ObserverBar.vue';
+import RightPanel from './rightPanel/RightPanel.vue';
+import QuitButton from './buttons/QuitButton.vue';
+import { BoardService } from '../services/BoardService';
 
 export default {
-  components: { ToolBar, SettingsButton, ObserverBar, RightPanel, QuitButton },
+  components: { ToolBar, ObserverBar, RightPanel, QuitButton },
   props: {
     room: { type: String, required: true },
     user: {
@@ -120,7 +119,6 @@ export default {
   <Teleport to="#header-anchor">
     <QuitButton @click="$emit('quitRoom')" />
     <ObserverBar :board="board" class="observerbar" />
-    <SettingsButton />
   </Teleport>
 </template>
 
@@ -149,6 +147,5 @@ export default {
 
 .observerbar {
   height: 100%;
-  margin-right: 20px;
 }
 </style>
