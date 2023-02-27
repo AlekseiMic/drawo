@@ -1,5 +1,5 @@
 <script lang="ts">
-import { inject, PropType, reactive, shallowReactive } from 'vue';
+import { inject, PropType, reactive, ref, shallowReactive } from 'vue';
 import {
   Manager,
   LineTool,
@@ -39,12 +39,23 @@ export default {
     board.settings = reactive(board.settings) as SettingsStore;
     board.tools.add(LineTool, MoveTool, PenTool, DeleteTool);
     board.actions.addReducer(toolReducer, observerReducer, layerReducer);
+    const loading = ref(true);
 
     return {
       boardService$: inject('boardService') as BoardService,
       intervalHandle: null as null | ReturnType<typeof setInterval>,
       board,
+      loading,
     };
+  },
+  watch: {
+    loading(value) {
+      if (!value) {
+        const layer = this.board.layers.order[1];
+        if (layer) this.board.layers.setActive(layer);
+        this.board.users.setActive(this.user.id);
+      }
+    },
   },
   mounted() {
     if (!this.$refs.boardContainer) return;
@@ -71,17 +82,13 @@ export default {
       this.board.actions.dispatch(
         addObserver(this.user.id, { name: this.user.name })
       );
-      setTimeout(() => {
-        const layer = this.board.layers.order[1];
-        if (layer) this.board.layers.setActive(layer);
-        this.board.users.setActive(this.user.id);
-      }, 2000);
       this.start();
     },
     async load() {
       const data = await this.boardService$.loadData(this.room);
       if (data) this.board.deserialize(data);
       this.init();
+      this.loading = false;
     },
     updatedHandler(data: { actions: Action[] }) {
       this.board?.actions.dispatch(data.actions, false);
@@ -113,6 +120,7 @@ export default {
 </script>
 
 <template>
+  <div v-if="loading" class="backdrop"><div class="loader"></div></div>
   <div id="board-container" ref="boardContainer"></div>
   <RightPanel :board="board" class="right-panel" />
   <ToolBar class="toolbar" :board="board" />
@@ -123,6 +131,38 @@ export default {
 </template>
 
 <style scoped lang="scss">
+.backdrop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(25, 25, 25, 0.5);
+  z-index: 1000000;
+}
+
+.loader {
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 10px solid #888;
+  position: absolute;
+  border-top: 10px solid blue;
+  animation: spin 1s cubic-bezier(0.39, 0.575, 0.565, 1) infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 #board-container {
   position: relative;
   width: 100%;
