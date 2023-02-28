@@ -1,4 +1,4 @@
-import { Action, ActionManager, RedrawState } from '../src/plugins/drawer/';
+import { Action, ActionManager, RedrawState } from '@plugins/drawer';
 
 export class ServerActionManager extends ActionManager {
   dispatch(action: Action | Action[]) {
