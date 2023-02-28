@@ -4,7 +4,7 @@ import {
   layerReducer,
   toolReducer,
   observerReducer,
-} from '../src/plugins/drawer/';
+} from '@plugins/drawer';
 import { ServerActionManager } from './ServerActionManager';
 
 export class ServerManager extends Manager {
