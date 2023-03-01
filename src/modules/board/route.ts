@@ -1,11 +1,9 @@
 import VueRouter from 'vue-router';
 import HomeView from './views/HomeView.vue';
-import BoardModule from './BoardModule.vue';
-import BoardView from './views/BoardView.vue';
 
 export const route: VueRouter.RouteRecordRaw = {
   path: '/board/',
-  component: BoardModule,
+  component: () => import('./BoardModule.vue'),
   children: [
     {
       path: '',
@@ -14,7 +12,7 @@ export const route: VueRouter.RouteRecordRaw = {
     {
       name: 'boardRoom',
       path: ':id',
-      component: BoardView,
+      component: () => import('./views/BoardView.vue'),
     },
   ],
 };

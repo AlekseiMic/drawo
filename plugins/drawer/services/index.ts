@@ -5,3 +5,4 @@ export * from './UserManager';
 export * from './ToolManager';
 export * from './DrawService';
 export * from './ActionManager';
+export * from './SettingsStore';

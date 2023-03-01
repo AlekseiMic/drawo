@@ -5,7 +5,7 @@ import PenIcon from '@assets/svg/pen.svg?component';
 import EraserIcon from '@assets/svg/eraser2.svg?component';
 import IconButton from '@ui/buttons/IconButton.vue';
 import { PropType } from 'vue';
-import { Manager } from '../../../../plugins/drawer/';
+import { Manager } from '@plugins/drawer';
 
 const icons: Record<string, string> = {
   LineTool: 'LineIcon',

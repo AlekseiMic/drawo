@@ -1,5 +1,6 @@
 <script lang="ts">
 import AppList from '../components/module-list/AppList.vue';
+import BoardSvg from '@assets/svg/board.svg?component';
 
 export default {
   components: { AppList },
@@ -9,7 +10,7 @@ export default {
         {
           name: 'board',
           description: 'draw simple art with your friends',
-          image: 'src/assets/svg/board.svg',
+          image: BoardSvg,
           multiplayer: true,
           url: '/board',
         },

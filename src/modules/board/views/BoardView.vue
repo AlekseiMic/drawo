@@ -21,7 +21,7 @@ export default {
   watch: {
     $route: {
       handler(next) {
-        this.room = next.params.id as string;
+        this.room = next.params.id + '';
       },
       immediate: true,
     },

@@ -24,10 +24,10 @@
     "paths": {
       "@ui/*": ["src/components/ui/*"],
       "@assets/*": ["src/assets/*"],
-      "@plugins/*": ["src/plugins/*"]
+      "@plugins/*": ["plugins/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "plugins/**/*.ts"],
   "exclude": ["node_modules"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -16,11 +16,11 @@
     "noUnusedParameters": false,
     "skipLibCheck": true,
     "paths": {
-      "@plugins/*": ["../src/plugins/*"]
+      "@plugins/*": ["../plugins/*"]
     }
   },
   "baseDir": ".",
   "rootDir": ".",
 
-  "include": ["./**/*", "../src/plugins/**/*"]
+  "include": ["./**/*", "../plugins/**/*"]
 }

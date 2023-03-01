@@ -1,9 +1,16 @@
 <script lang="ts">
-export default {};
+export default {
+  props: {
+    to: {
+      type: String,
+      required: true,
+    },
+  },
+};
 </script>
 
 <template>
-  <router-link><slot></slot></router-link>
+  <router-link :to="to"><slot></slot></router-link>
 </template>
 
 <style scoped>
@@ -11,4 +18,3 @@ a {
   text-decoration: none;
 }
 </style>
-
