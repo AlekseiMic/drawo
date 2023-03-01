@@ -13,8 +13,8 @@ import {
   toolReducer,
   layerReducer,
   addObserver,
+  SettingsStore
 } from '@plugins/drawer/';
-import { SettingsStore } from '@plugins/drawer/services/SettingsStore';
 import ToolBar from './ToolBar.vue';
 import ObserverBar from './ObserverBar.vue';
 import RightPanel from './rightPanel/RightPanel.vue';

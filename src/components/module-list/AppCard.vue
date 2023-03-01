@@ -1,6 +1,6 @@
 <script lang="ts">
-import OmegaLink from '../ui/OmegaLink.vue';
-import MultiplayerSvg from '../../assets/svg/multiplayer.svg?component';
+import OmegaLink from '@ui/OmegaLink.vue';
+import MultiplayerSvg from '@assets/svg/multiplayer.svg?component';
 
 export default {
   components: { OmegaLink, MultiplayerSvg },
@@ -24,7 +24,7 @@ export default {
         </span>
       </div>
       <div class="image-wrapper">
-        <img class="image" :src="image" />
+        <component :is="image" class="image" />
       </div>
       <div class="description">{{ description }}</div>
     </article>

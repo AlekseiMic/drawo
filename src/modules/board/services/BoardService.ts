@@ -1,4 +1,4 @@
-import { Action } from 'src/plugins/drawer';
+import { Action } from '@plugins/drawer';
 import { SocketService } from './SocketService';
 
 export enum ResponseStatus {
@@ -67,7 +67,7 @@ export class BoardService {
 
   quitRoom(data: { room: string; id: string }) {
     return new Promise<QuitResponse>((r) => {
-      this.socket.send<typeof data, QuitResponse>('quit', data, r);
+      this.socket.send<typeof data, QuitResponse>('leave', data, r);
     });
   }
 
