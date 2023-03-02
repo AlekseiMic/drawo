@@ -62,7 +62,7 @@ export class Manager {
       layers: this.layers.serialize(),
       scratches: this.scratches.serialize(),
       actions: this.actions.serialize(),
-      settigns: this.settings.serialize(),
+      settings: this.settings.serialize(),
     };
   }
 
@@ -87,10 +87,8 @@ export class Manager {
     this.onLayerAdd = this.onLayerAdd.bind(this);
     this.onLayerRemove = this.onLayerRemove.bind(this);
 
-    this._drawService = new DrawService(this._canvases, this.settings);
-
     const components = { ...defaultComponents, ...options?.components };
-
+    this._drawService = new DrawService(this._canvases, this.settings);
     this.users = new components.users();
     this.tools = new components.tools(this);
     this.layers = new components.layers();
@@ -108,16 +106,17 @@ export class Manager {
   }
 
   init() {
-    if (!this._container) return;
-
-    this.onResize();
-    this._canvases.updateRect(this.rect);
     this.clear();
 
-    this.layers.subscribeOnLayerAdd(this.onLayerAdd);
-    this.layers.subscribeOnLayerRemove(this.onLayerRemove);
-    this.users.subscribeOnUserChange(this.onUserChange);
-    this.users.subscribeOnUserMove(this.onUserMove);
+    if (this._container) {
+      this.onResize();
+      this._canvases.updateRect(this.rect);
+      this.layers.subscribeOnLayerAdd(this.onLayerAdd);
+      this.layers.subscribeOnLayerRemove(this.onLayerRemove);
+      this.users.subscribeOnUserChange(this.onUserChange);
+      this.users.subscribeOnUserMove(this.onUserMove);
+    }
+
     this._refresh.setUpdateCallback(this.update);
   }
 

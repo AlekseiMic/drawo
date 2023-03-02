@@ -1,4 +1,4 @@
-import { User } from '../entities/User';
+import { IRawUser, User } from '../entities/User';
 
 export class UserManager {
   public active?: string;
@@ -8,8 +8,13 @@ export class UserManager {
   private _callbacks: Record<'change' | 'move', ((userId?: string) => void)[]> =
     { change: [], move: [] };
 
-  serialize() {
-    return this.users;
+  serialize(): IRawUser[] {
+    return this.users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      isObserver: u.isObserver,
+      center: u.center,
+    }));
   }
 
   deserialize(data: any) {
