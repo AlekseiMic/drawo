@@ -1,4 +1,13 @@
-export class User {
+import { Point } from '../interfaces';
+
+export interface IRawUser {
+  id: string;
+  name: string;
+  isObserver?: boolean;
+  center: Point;
+}
+
+export class User implements IRawUser {
   public id: string;
 
   public name: string;

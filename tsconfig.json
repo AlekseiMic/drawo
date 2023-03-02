@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["ESNext", "DOM"],
-    "types": ["vite-svg-loader", "vite/client"],
+    "types": ["cypress", "vite-svg-loader", "vite/client", "node"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "sourceMap": false,

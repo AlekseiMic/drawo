@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test:drawer:unit": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 TS_NODE_PROJECT=tsconfig.test.json nodemon --watch ./plugins/drawer/tests/* --exec mocha",
+    "test:drawer:benchmark": "",
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json  --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch src/plugins server/index.ts"
+    "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch plugins server/index.ts"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.0",
@@ -31,7 +33,10 @@
     "vue-socket.io": "^3.0.10"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.12",
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/register": "^7.21.0",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
     "@storybook/addon-interactions": "^6.5.15",
@@ -39,10 +44,14 @@
     "@storybook/builder-vite": "^0.2.7",
     "@storybook/testing-library": "^0.0.13",
     "@storybook/vue3": "^6.5.15",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.18",
     "@vitejs/plugin-vue": "^4.0.0",
     "babel-loader": "^8.3.0",
+    "chai": "^4.3.7",
+    "eslint-plugin-cypress": "^2.12.1",
     "esm": "^3.2.25",
+    "mocha": "^10.2.0",
     "node-sass": "^8.0.0",
     "nodemon": "^2.0.20",
     "sass": "^1.57.1",

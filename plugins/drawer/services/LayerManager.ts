@@ -1,4 +1,4 @@
-import { Layer } from '../entities/Layer';
+import { IRawLayer, Layer } from '../entities/Layer';
 
 export class LayerManager {
   public active?: string;
@@ -14,7 +14,10 @@ export class LayerManager {
     ((layerId: string) => void)[]
   > = { add: [], remove: [] };
 
-  serialize() {
+  serialize(): {
+    layers: Record<IRawLayer['id'], IRawLayer>;
+    scratchesPerLayer: Record<IRawLayer['id'], string[]>;
+  } {
     return {
       layers: this.layers,
       scratchesPerLayer: this.scratchesPerLayer,

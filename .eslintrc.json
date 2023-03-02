@@ -1,7 +1,13 @@
 {
   "root": true,
   "parser": "vue-eslint-parser",
-  "extends": ["eslint:recommended", "plugin:vue/vue3-recommended", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "prettier",
+    "plugin:cypress/recommended"
+  ],
+
   "parserOptions": {
     "parser": "@typescript-eslint/parser",
     "sourceType": "module",
