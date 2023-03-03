@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "types": ["vite-svg-loader", "vite/client", "node"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "sourceMap": false,
+    "importHelpers": true,
+    "moduleDetection": "force",
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "incremental": true,
+    "allowJs": true,
+    "paths": {
+      "@ui/*": ["src/components/ui/*"],
+      "@assets/*": ["src/assets/*"],
+      "@plugins/*": ["plugins/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "plugins/**/*.ts"],
+  "exclude": ["node_modules", "plugins/drawer/tests/"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
