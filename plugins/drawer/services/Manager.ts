@@ -48,13 +48,13 @@ export class Manager {
   //
   //
   //
-  private _refresh = new RefreshService();
+  protected _refresh = new RefreshService();
 
-  private _canvases = new CanvasManager();
+  protected _canvases = new CanvasManager();
 
-  private _drawService: DrawService;
+  protected _drawService: DrawService;
 
-  private _container?: HTMLDivElement;
+  protected _container?: HTMLDivElement;
 
   serialize() {
     return {
@@ -141,18 +141,18 @@ export class Manager {
     }
   }
 
-  private onLayerAdd(layerId: string) {
+  protected onLayerAdd(layerId: string) {
     const layer = this.layers.get(layerId);
     if (layer) {
       this._canvases.add(layer.id, layer.zIndex);
     }
   }
 
-  private onLayerRemove(layerId: string) {
+  protected onLayerRemove(layerId: string) {
     this._canvases.remove(layerId);
   }
 
-  private onUserChange() {
+  protected onUserChange() {
     this.onResize();
   }
 
@@ -171,7 +171,7 @@ export class Manager {
     }
   }
 
-  private drawLayer(
+  protected drawLayer(
     layer: Layer,
     changes: BaseRedrawState,
     isFull: boolean,
@@ -199,7 +199,7 @@ export class Manager {
     });
   }
 
-  private drawScratches(
+  protected drawScratches(
     ids: string[],
     layer: string,
     imageData: ImageData,
@@ -215,7 +215,7 @@ export class Manager {
     }
   }
 
-  private onResize() {
+  protected onResize() {
     if (!this._container) return;
     const { x, y, height, width } = this._container.getBoundingClientRect();
     this.offset = { x, y };
@@ -231,11 +231,11 @@ export class Manager {
     this.rect.bottom = this.rect.top + height;
   }
 
-  private listenResize() {
+  protected listenResize() {
     window.addEventListener('resize', this.onResize);
   }
 
-  private unlistenResize() {
+  protected unlistenResize() {
     window.removeEventListener('resize', this.onResize);
   }
 }

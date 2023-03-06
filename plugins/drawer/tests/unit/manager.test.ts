@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Manager } from '../';
+import { Manager } from '../../';
 import 'mocha';
 
 describe('Manager', function () {

@@ -34,7 +34,7 @@ export interface IScratch {
 
   change(data: any): void;
 
-  serialize(): any;
+  serialize(): { name: string; id: string; user: string; payload: unknown };
 
   draw(data: ImageData, drawer: DrawService, rect?: Rect): void;
 

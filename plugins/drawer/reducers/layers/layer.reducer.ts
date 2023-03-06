@@ -11,6 +11,11 @@ export default (m: Manager, s: RedrawState, a: Action) => {
     }
     case ActionType.RemoveLayer: {
       if (!a.id) return;
+      if (a.id !== 'preview') {
+        m.layers.getScratches(a.id).forEach((s) => {
+          m.scratches.remove(s);
+        });
+      }
       m.layers.remove(a.id);
       break;
     }
