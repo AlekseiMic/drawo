@@ -91,6 +91,7 @@ export class LayerManager {
     if (index === -1) return;
     this.order.splice(index, 1);
     delete this.layers[layerId];
+    delete this.scratchesPerLayer[layerId];
     this._callbacks.remove.forEach((cb) => cb(layerId));
 
     if (layerId !== this.active) return;

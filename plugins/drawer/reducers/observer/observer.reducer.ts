@@ -11,9 +11,10 @@ export default (m: Manager, s: RedrawState, a: Action) => {
     }
     case ActionType.AddObserver: {
       const oldUser = m.users.getById(a.id);
+
       if (oldUser) {
-        oldUser.change(a?.payload);
-        if (a?.payload?.center) oldUser.setCenter(a.payload.center);
+        oldUser.change(a.payload);
+        if (a.payload?.center) oldUser.setCenter(a.payload.center);
       } else {
         const user = new User(
           a.id,
