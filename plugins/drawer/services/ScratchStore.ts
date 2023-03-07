@@ -8,7 +8,7 @@ export class ScratchStore {
     return Object.values(this._scratches).map((s) => s.serialize());
   }
 
-  deserialize(data?: any[]) {
+  deserialize(data?: IScratch[]) {
     this._scratches =
       data?.reduce<typeof this._scratches>((acc, s) => {
         const scratch = ScratchFactory.unserialize(s);
