@@ -14,9 +14,12 @@ export class ActionManager {
     external: { history: [], pending: [] },
   };
 
+  public manager: Manager;
   protected _reducers: Reducer[] = [];
 
-  constructor(protected manager: Manager) {}
+  constructor(manager: Manager) {
+    this.manager = manager;
+  }
 
   serialize() {
     return {

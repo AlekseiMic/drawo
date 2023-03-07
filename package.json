@@ -4,16 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test:drawer:unit": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 TS_NODE_PROJECT=tsconfig.test.json nodemon --watch ./plugins/drawer/tests/* --exec mocha",
+    "test:drawer:unit": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 nodemon --exec 'yarn mocha' --watch plugins -e ts,js",
     "test:drawer:benchmark": "vite -c plugins/drawer/tests/benchmark/vite.config.ts",
     "test:drawer:integration:server": "vite -c plugins/drawer/tests/integration/web/vite.config.ts",
     "test:drawer:integration:start": "cypress open",
     "test:drawer:integration": "start-server-and-test test:drawer:integration:server http://localhost:4320 test:drawer:integration:start",
     "dev": "vite",
     "build": "TS_NODE_PROJECT=tsconfig.build.json vue-tsc -p tsconfig.build.json && vite build",
-    "preview": "vite preview",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
-    "build-storybook": "build-storybook",
     "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch plugins server/index.ts"
   },
   "dependencies": {

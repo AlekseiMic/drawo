@@ -158,6 +158,7 @@ export class Manager {
 
   update() {
     const state = this.actions.getPendingUpdates();
+    if (!this._container) return;
     const shouldResize = this._canvases.updateRect(this.rect);
     const diff = state.getChanges(shouldResize, this.layers.order);
 
@@ -232,10 +233,14 @@ export class Manager {
   }
 
   protected listenResize() {
-    window.addEventListener('resize', this.onResize);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.onResize);
+    }
   }
 
   protected unlistenResize() {
-    window.removeEventListener('resize', this.onResize);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onResize);
+    }
   }
 }
