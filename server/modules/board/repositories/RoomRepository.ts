@@ -3,6 +3,10 @@ import { Room } from '../entities/Room';
 export class RoomRepository {
   private _data: Record<string, Room> = {};
 
+  getAll(): Room[] {
+    return Object.values(this._data);
+  }
+
   get(id: string): Room {
     return this._data[id];
   }

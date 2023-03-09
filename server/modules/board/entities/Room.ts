@@ -39,4 +39,8 @@ export class Room {
     if (index === -1) return false;
     return this._users.splice(index).length === 1;
   }
+
+  getUserCount() {
+    return this._users.length;
+  }
 }

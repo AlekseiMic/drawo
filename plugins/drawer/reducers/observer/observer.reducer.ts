@@ -3,7 +3,7 @@ import { Manager, RedrawState, User } from '../../';
 import { ActionType } from '../../interfaces/ActionType';
 
 export default (m: Manager, s: RedrawState, a: Action) => {
-  if (!a.id) return;
+  if (!a || !a.id) return;
   switch (a.type) {
     case ActionType.MoveObserver: {
       m.users.move(a.id, a.payload.x, a.payload.y);

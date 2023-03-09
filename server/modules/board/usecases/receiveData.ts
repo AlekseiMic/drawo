@@ -5,7 +5,7 @@ export async function receiveDataUsecase(
   data: { room: string; data: { actions: any[]; user: string } },
   socket: Socket
 ) {
-  socket.to(data.room).emit('sendData', data);
+  socket.to(data.room).emit('sendData', data.data);
   const room = roomRepo.get(data.room);
   if (!room) return false;
   room.board.actions.dispatch(data.data.actions);
