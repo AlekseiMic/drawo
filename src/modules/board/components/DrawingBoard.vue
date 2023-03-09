@@ -13,7 +13,7 @@ import {
   toolReducer,
   layerReducer,
   addObserver,
-  SettingsStore
+  SettingsStore,
 } from '@plugins/drawer/';
 import ToolBar from './ToolBar.vue';
 import ObserverBar from './ObserverBar.vue';

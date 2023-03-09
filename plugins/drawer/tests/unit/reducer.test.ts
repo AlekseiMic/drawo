@@ -44,6 +44,7 @@ describe('Actions', () => {
           )
         );
         m.update();
+
         const scratch = m.scratches.get('test') as PenScratch;
         expect(scratch.constructor.name).to.be.equal('PenScratch');
         expect(scratch).to.be.instanceof(PenScratch);
@@ -75,6 +76,7 @@ describe('Actions', () => {
           )
         );
         m.update();
+
         const scratch = m.scratches.get('test') as LineScratch;
         expect(scratch.constructor.name).to.be.equal('LineScratch');
         expect(scratch).to.be.instanceof(LineScratch);
@@ -92,38 +94,38 @@ describe('Actions', () => {
     });
 
     describe('Change', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Start draging', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Drop', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Hover', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Unhover', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Translate', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
 
     describe('Remove', () => {
-      it('Pen', () => {});
-      it('Line', () => {});
+      it('Pen');
+      it('Line');
     });
   });
 

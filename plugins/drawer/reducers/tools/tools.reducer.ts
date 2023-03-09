@@ -4,7 +4,7 @@ import { ScratchFactory } from '../../scratches/ScratchFactory';
 import { ActionType } from '../../interfaces/ActionType';
 
 export default (m: Manager, s: RedrawState, a: Action) => {
-  if (!a.layerId || !a.id || !a.user) return;
+  if (!a || !a.layerId || !a.id || !a.user) return;
   switch (a.type) {
     case ActionType.AddScratch: {
       const scratch = ScratchFactory.create(a);
