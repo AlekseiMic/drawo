@@ -51,9 +51,11 @@ export default {
   watch: {
     loading(value) {
       if (!value) {
-        const layer = this.board.layers.order[1];
-        if (layer) this.board.layers.setActive(layer);
-        this.board.users.setActive(this.user.id);
+        setTimeout(() => {
+          const layer = this.board.layers.order[1];
+          if (layer) this.board.layers.setActive(layer);
+          this.board.users.setActive(this.user.id);
+        }, 100);
       }
     },
   },
