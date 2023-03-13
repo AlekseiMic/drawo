@@ -2,7 +2,7 @@
   "name": "drawo",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test:drawer:unit": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 nodemon --exec 'yarn mocha' --watch plugins -e ts,js",
     "test:drawer:benchmark": "vite -c plugins/drawer/tests/benchmark/vite.config.ts",
@@ -12,7 +12,8 @@
     "dev": "vite",
     "build": "TS_NODE_PROJECT=tsconfig.build.json vue-tsc -p tsconfig.build.json && vite build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
-    "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch plugins server/index.ts"
+    "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch plugins server/index.ts",
+    "server:vite": "TS_NODE_PROJECT=server/tsconfig.json vite -c server/vite.config.ts"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.0",
@@ -28,10 +29,14 @@
     "prettier": "^2.8.2",
     "socket.io": "^4.5.4",
     "socket.io-client": "^4.5.4",
+    "ts-loader": "^9.4.2",
+    "tsconfig-paths-webpack-plugin": "^4.0.1",
     "vite-svg-loader": "^4.0.0",
     "vue": "^3.2.45",
     "vue-router": "4",
-    "vue-socket.io": "^3.0.10"
+    "vue-socket.io": "^3.0.10",
+    "webpack": "^5.76.1",
+    "webpack-cli": "^5.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.21.0",
