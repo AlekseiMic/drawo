@@ -1,0 +1,15 @@
+[Unit]
+Description=Drawo app server(websocket)
+
+[Service]
+ExecStart=/var/www/html/drawo.ru/server/main.js
+Restart=always
+User=nobody
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=nogroup
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/html/drawo.ru/server
+
+[Install]
+WantedBy=multi-user.target

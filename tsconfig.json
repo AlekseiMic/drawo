@@ -28,6 +28,5 @@
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "plugins/**/*.ts"],
-  "exclude": ["node_modules"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "exclude": ["node_modules"]
 }
