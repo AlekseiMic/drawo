@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import boardModule from './modules/board/module';
 
 const io = new Server({
+  path: '/ws/',
   cors: {
     origin: '*',
     credentials: true,

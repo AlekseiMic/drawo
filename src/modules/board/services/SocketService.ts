@@ -4,7 +4,7 @@ export class SocketService {
   private connection: ReturnType<typeof io>;
 
   constructor(url: string) {
-    this.connection = io(url);
+    this.connection = io(url, { path: '/ws/socket.io' });
   }
 
   on(event: string, cb: (data: unknown) => void) {

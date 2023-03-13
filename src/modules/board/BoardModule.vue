@@ -14,7 +14,7 @@ export default {
     HomeFooter,
   },
   setup() {
-    const socket = new SocketService('http://drawo.ru/ws');
+    const socket = new SocketService(process.env.NODE_ENV === 'development'?'http://localhost:3000':'http://drawo.ru/');
     const boardService$ = new BoardService(socket);
     provide('boardService', boardService$);
     provide('storage', new Storage());
