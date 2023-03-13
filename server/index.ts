@@ -14,6 +14,6 @@ const onConnection = (socket: Socket) => {
 
 io.on('connection', onConnection);
 
-io.listen(5441);
+io.listen(3000);
 
 export {};
