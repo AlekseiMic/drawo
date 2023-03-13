@@ -6,13 +6,19 @@ GREEN='\033[0;32m'
 
 
 echo "'${GREEN}'updating npm deps"
-if ! npm install > /dev/null 2>&1; then
+if ! yarn > /dev/null 2>&1; then
   echo "${RED}Could not update dependencies"
   exit 1
 fi
 
-echo "'${GREEN}'building project"
-if ! npm run build > /dev/null 2>&1; then
+echo "'${GREEN}'building client"
+if ! yarn  build > /dev/null 2>&1; then
+  echo "${RED}Build failed"
+  exit 1
+fi
+
+echo "'${GREEN}'building server"
+if ! yarn server:build > /dev/null 2>&1; then
   echo "${RED}Build failed"
   exit 1
 fi
