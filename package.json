@@ -2,7 +2,7 @@
   "name": "drawo",
   "private": true,
   "version": "0.0.0",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "test:drawer:unit": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 nodemon --exec 'yarn mocha' --watch plugins -e ts,js",
     "test:drawer:benchmark": "vite -c plugins/drawer/tests/benchmark/vite.config.ts",
@@ -13,7 +13,9 @@
     "build": "TS_NODE_PROJECT=tsconfig.build.json vue-tsc -p tsconfig.build.json && vite build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "server": "TS_NODE_PROJECT=server/tsconfig.json nodemon --exec node -P server/tsconfig.json --loader ts-paths-esm-loader --experimental-specifier-resolution=node --watch server --watch plugins server/index.ts",
-    "server:vite": "TS_NODE_PROJECT=server/tsconfig.json vite -c server/vite.config.ts"
+    "server:vite": "TS_NODE_PROJECT=server/tsconfig.json vite -c server/vite.config.ts",
+    "server:build": "webpack -c server/webpack.config.js"
+
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.0",
