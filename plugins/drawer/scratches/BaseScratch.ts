@@ -23,6 +23,8 @@ export abstract class BaseScratch implements IScratch {
 
   protected _rect: Rect = { left: 0, top: 0, right: 0, bottom: 0 };
 
+  abstract getName(): string;
+
   abstract isIntersects(point: Point, region?: number | undefined): boolean;
 
   abstract process(): void;

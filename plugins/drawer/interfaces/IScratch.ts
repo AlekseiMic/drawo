@@ -45,4 +45,6 @@ export interface IScratch {
   move(point: Point): void;
 
   process(): void;
+
+  getName(): string;
 }
