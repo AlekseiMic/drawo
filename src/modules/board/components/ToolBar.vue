@@ -5,13 +5,19 @@ import PenIcon from '@assets/svg/pen.svg?component';
 import EraserIcon from '@assets/svg/eraser2.svg?component';
 import IconButton from '@ui/buttons/IconButton.vue';
 import { PropType } from 'vue';
-import { Manager } from '@plugins/drawer';
+import {
+  Manager,
+  LineTool,
+  MoveTool,
+  PenTool,
+  DeleteTool,
+} from '@plugins/drawer';
 
 const icons: Record<string, string> = {
-  LineTool: 'LineIcon',
-  MoveTool: 'MoveIcon',
-  PenTool: 'PenIcon',
-  DeleteTool: 'EraserIcon',
+  [LineTool.name]: 'LineIcon',
+  [MoveTool.name]: 'MoveIcon',
+  [PenTool.name]: 'PenIcon',
+  [DeleteTool.name]: 'EraserIcon',
 };
 
 export default {

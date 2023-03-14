@@ -25,7 +25,7 @@ export default {
     <div class="name__wrapper">
       <span class="index">[{{ index }}]</span>
       <span class="name">{{
-        scratch.constructor.name.split('Scratch')[0]
+        scratch.getName().split('Scratch')[0]
       }}</span>
     </div>
     <IconButton class="delete-btn" @click="$emit('deleteScratch', scratch.id)">

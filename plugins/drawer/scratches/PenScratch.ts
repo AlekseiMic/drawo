@@ -31,9 +31,13 @@ export class PenScratch extends BaseScratch implements IScratch, Pointable {
     return line;
   }
 
+  getName() {
+    return 'PenScratch';
+  }
+
   serialize() {
     return {
-      name: this.constructor.name,
+      name: this.getName(),
       id: this.id,
       user: this.user,
       payload: {

@@ -3,7 +3,6 @@ export default {
     supportFile: false,
     specPattern: 'plugins/drawer/**/*.cy.ts',
     setupNodeEvents(on, config) {
-
       // implement node event listeners here
     },
   },

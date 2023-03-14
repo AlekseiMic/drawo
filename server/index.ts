@@ -17,4 +17,6 @@ io.on('connection', onConnection);
 
 io.listen(3000);
 
+console.log('Started socket server on 3000 port');
+
 export {};

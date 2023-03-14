@@ -46,7 +46,7 @@ describe('Actions', () => {
         m.update();
 
         const scratch = m.scratches.get('test') as PenScratch;
-        expect(scratch.constructor.name).to.be.equal('PenScratch');
+        expect(scratch.getName()).to.be.equal('PenScratch');
         expect(scratch).to.be.instanceof(PenScratch);
         expect(scratch.thickness).to.be.equal(5);
         expect(scratch.color).to.be.equal('#335533');
@@ -78,7 +78,7 @@ describe('Actions', () => {
         m.update();
 
         const scratch = m.scratches.get('test') as LineScratch;
-        expect(scratch.constructor.name).to.be.equal('LineScratch');
+        expect(scratch.getName()).to.be.equal('LineScratch');
         expect(scratch).to.be.instanceof(LineScratch);
         expect(scratch.thickness).to.be.equal(5);
         expect(scratch.color).to.be.equal('#335533');

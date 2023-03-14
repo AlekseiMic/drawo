@@ -17,9 +17,13 @@ export class LineScratch extends BaseScratch implements IScratch, Pointable {
 
   private _rEnd: Point = { x: 0, y: 0 };
 
+  getName() {
+    return 'LineScratch';
+  }
+
   serialize() {
     return {
-      name: this.constructor.name,
+      name: this.getName(),
       id: this.id,
       user: this.user,
       payload: {
