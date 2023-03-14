@@ -88,7 +88,9 @@ export default {
       const data = await this.boardService$.loadData(this.room);
       if (data) this.board.deserialize(data);
       this.init();
-      this.loading = false;
+      setTimeout(() => {
+        this.loading = false;
+      }, 300);
     },
     updatedHandler(data: { actions: Action[] }) {
       this.board?.actions.dispatch(data.actions, false);

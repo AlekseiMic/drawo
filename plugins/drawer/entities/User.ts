@@ -15,8 +15,8 @@ export class User implements IRawUser {
   public isObserver: boolean = false;
 
   public center = {
-    x: 1000,
-    y: 1000,
+    x: 0,
+    y: 0,
   };
 
   setCenter(position: { x: number; y: number }) {
