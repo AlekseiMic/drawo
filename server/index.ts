@@ -1,5 +1,7 @@
+import dotenv from 'dotenv';
 import { Server, Socket } from 'socket.io';
 import boardModule from './modules/board/module';
+dotenv.config();
 
 const io = new Server({
   path: '/ws/',
@@ -15,8 +17,10 @@ const onConnection = (socket: Socket) => {
 
 io.on('connection', onConnection);
 
-io.listen(3000);
+const port = Number(process.env.VITE_API_PORT ?? 3000);
 
-console.log('Started socket server on 3000 port');
+io.listen(port);
+
+console.log('Started socket server on ' + port + ' port');
 
 export {};

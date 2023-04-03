@@ -7,6 +7,9 @@ import { BoardService } from './services/BoardService';
 import { SocketService } from './services/SocketService';
 import { Storage } from './services/Storage';
 
+const port = Number(import.meta.env.VITE_API_PORT ?? 3000);
+const isDev = process.env.NODE_ENV === 'development';
+
 export default {
   components: {
     HomeHeader,
@@ -14,7 +17,9 @@ export default {
     HomeFooter,
   },
   setup() {
-    const socket = new SocketService(process.env.NODE_ENV === 'development'?'http://localhost:3000':'http://drawo.ru/');
+    const socket = new SocketService(
+      isDev ? `http://localhost:${port}` : 'http://drawo.ru/'
+    );
     const boardService$ = new BoardService(socket);
     provide('boardService', boardService$);
     provide('storage', new Storage());

@@ -36,7 +36,8 @@ export default {
 
 <style scoped>
 .scratch {
-  height: 34px;
+  height: 36px;
+  flex-shrink: 0;
   background: var(--c-default-background-120);
   display: flex;
   align-items: center;

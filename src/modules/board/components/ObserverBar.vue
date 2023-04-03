@@ -31,7 +31,7 @@ export default {
       }"
       @click="setObserver(observer)"
     >
-      <span :title="observer.id">
+      <span>
         {{ observer.name.slice(0, 2).toUpperCase() }}
       </span>
     </IconButton>

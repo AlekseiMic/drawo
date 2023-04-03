@@ -1,5 +1,5 @@
 import { Manager } from '@plugins/drawer';
-import {ServerManager} from '../services/ServerManager';
+import { ServerManager } from '../services/ServerManager';
 import { nanoid } from 'nanoid';
 
 export class Room {
@@ -19,9 +19,9 @@ export class Room {
   }
 
   addUser(name: string, id?: string) {
-    const existingUser = id?this.getUser(id):undefined;
+    const existingUser = id ? this.getUser(id) : undefined;
     if (existingUser) return existingUser;
-    const user = { name, id: id ?? nanoid(15) };
+    const user = { name, id: id || nanoid(15) };
     this._users.push(user);
     return user;
   }

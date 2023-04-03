@@ -6,7 +6,7 @@ export default {
   emits: ['changeColor'],
   data() {
     return {
-      colors: ['#ffffffff', '#ff0000ff'],
+      colors: ['#F5F5F5ff', '#FC2947ff', '#FF6000ff', '#89375Fff', '#B2A4FFff', '#19A7CEff','#FCE22Aff', '#AACB73ff', '#820000ff', '#0002A1ff'],
     };
   },
   methods: {
@@ -35,7 +35,8 @@ export default {
 <style scoped>
 .container {
   padding: 5px 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 .color {

@@ -11,7 +11,7 @@ type Response<T> = {
   reason?: string;
 } & T;
 
-type JoinResponse = Response<{ id?: string }>;
+type JoinResponse = Response<{ id?: string, name?: string }>;
 type QuitResponse = Response<{}>;
 type CreateResponse = Response<{ room: string; id: string }>;
 

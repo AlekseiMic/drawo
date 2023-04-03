@@ -53,13 +53,18 @@ export default {
         id: this.user.id,
       });
 
-      this.connected = result.status === ResponseStatus.Success;
-
-      if (!this.connected) this.error = 'cannot connect';
-
       if (result.id && result.id !== this.user.id) {
+        this.user.id = result.id;
         this.storage$.saveData({ id: result.id });
       }
+
+      if (result.name && result.name !== this.user.name) {
+        this.user.name = result.name;
+        this.storage$.saveData({ name: result.name });
+      }
+
+      this.connected = result.status === ResponseStatus.Success;
+      if (!this.connected) this.error = 'cannot connect';
     },
     disconnect() {
       this.quitRoom();
