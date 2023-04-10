@@ -1,2 +1,3 @@
 # Drawo
-## My project to learn vue
+
+Simple project I created to learn basics of Vue
